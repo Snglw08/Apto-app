@@ -48,3 +48,7 @@ next-env.d.ts
 # y .dev.vars. Son ~550 KB de tipos del runtime de Workers: se regeneran, no
 # se versionan. Ver "Puesta en marcha" en el README.
 cloudflare-env.d.ts
+
+# Notas de trabajo locales: checklist de puesta en marcha y pendientes.
+# No forma parte de lo que se publica. Quitar esta línea si se quiere versionar.
+PENDIENTES.md
