@@ -1,0 +1,88 @@
+.banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  box-shadow: 0 12px 32px rgba(16, 22, 35, 0.18);
+  animation: aparecer 0.25s ease-out;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.icono {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-box);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.titulo {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--color-ink);
+}
+
+.subtitulo {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.botonInstalar {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-box);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cerrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg-app);
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

@@ -1,0 +1,100 @@
+/*
+ * Tokens de diseño. Todo el color de la app sale de acá: los CSS Modules
+ * de cada ruta consumen estas variables y no declaran valores propios, así
+ * que cambiar el tema es editar este bloque y nada más.
+ *
+ * Los tokens del semáforo (vetado / neutro / recomendado / alerta) vienen en
+ * tríos: el color sólido, el fondo suave del badge y el color de texto sobre
+ * ese fondo. El texto es más oscuro que el sólido a propósito — el sólido no
+ * llega a 4.5:1 sobre su propio tinte.
+ */
+
+:root {
+  /* Marca */
+  --color-brand: #1b3a6b;
+  --color-brand-dark: #142c52;
+  --color-brand-soft: #e8eef7;
+  --color-on-brand: #ffffff;
+
+  --color-accent: #e8a020;
+  --color-accent-soft: #fdf5e4;
+  --color-accent-border: #f0cd85;
+
+  /* Semáforo */
+  --color-vetado: #c0392b;
+  --color-vetado-bg: #fdecea;
+  --color-vetado-fg: #a3251b;
+
+  --color-neutro: #667085;
+  --color-neutro-bg: #eef0f3;
+
+  --color-recomendado: #18794e;
+  --color-recomendado-bg: #e6f4ec;
+  --color-recomendado-fg: #136a42;
+
+  /* "Datos incompletos": ni apto ni vetado, ver README */
+  --color-alerta-bg: #fdf3dd;
+  --color-alerta-fg: #8a5a08;
+
+  /* Superficies */
+  --color-bg-app: #f4f5f7;
+  --color-bg-gradient-from: #fafbfc;
+  --color-bg-gradient-to: #e6eaf1;
+  --color-bg-card: #ffffff;
+  --color-bg-camera: #0d1117;
+
+  /* Texto */
+  --color-ink: #101623;
+  --color-text-secondary: #667085;
+  --color-text-tertiary: #98a2b3;
+
+  /* Bordes */
+  --color-border: #e4e7ec;
+  --color-border-strong: #d0d5dd;
+
+  /* Formas */
+  --radius-box: 8px;
+  --radius-card: 10px;
+  --radius-badge: 6px;
+
+  /* Sombras */
+  --shadow-card: 0 1px 2px rgba(16, 22, 35, 0.06), 0 1px 3px rgba(16, 22, 35, 0.1);
+  --shadow-brand: 0 6px 16px rgba(27, 58, 107, 0.25);
+  --shadow-scan-pill: 0 4px 14px rgba(27, 58, 107, 0.35);
+  --glow-accent: 0 0 14px 3px rgba(232, 160, 32, 0.75);
+  --shadow-accent: 0 8px 22px rgba(232, 160, 32, 0.45);
+}
+
+html {
+  height: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  color: var(--color-ink);
+  background: var(--color-bg-app);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}

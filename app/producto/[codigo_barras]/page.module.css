@@ -1,0 +1,484 @@
+.centrado {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: var(--color-bg-app);
+  text-align: center;
+}
+
+.mensaje {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.link {
+  color: var(--color-brand);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 4px;
+}
+
+.linkInicio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-box);
+  background: var(--color-bg-card);
+  color: var(--color-brand);
+}
+
+.inicioAbajo {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.linkInicioGrande {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  color: var(--color-brand);
+  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.06);
+}
+
+.pagina {
+  min-height: 100dvh;
+  background: var(--color-bg-app);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 24px;
+}
+
+.pagina > .header {
+  padding: 18px 18px 0;
+}
+
+.tarjeta {
+  margin: 0 18px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.08);
+}
+
+.nombre {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+.marca {
+  margin-top: 2px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.eyebrow {
+  margin-bottom: 6px;
+  font-weight: 800;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-tertiary);
+}
+
+.ingredientes {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.sellosFila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sello {
+  width: 52px;
+  height: 52px;
+  clip-path: polygon(
+    30% 0%,
+    70% 0%,
+    100% 30%,
+    100% 70%,
+    70% 100%,
+    30% 100%,
+    0% 70%,
+    0% 30%
+  );
+  background: var(--color-bg-camera);
+  color: var(--color-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  font-weight: 800;
+  font-size: 7px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* --- Banner del semáforo --- */
+
+.banner {
+  padding: 18px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.bannerVetado {
+  background: var(--color-vetado);
+}
+
+.bannerNeutro {
+  background: var(--color-neutro);
+}
+
+.bannerRecomendado {
+  background: var(--color-recomendado);
+}
+
+.bannerHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bannerEnlace {
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.bannerIcono {
+  width: 66px;
+  height: 66px;
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--color-on-brand);
+}
+
+.bannerPalabra {
+  font-weight: 800;
+  font-size: 34px;
+  color: var(--color-on-brand);
+}
+
+.bannerPalabraChica {
+  font-size: 29px;
+}
+
+.bannerSubtitulo {
+  font-weight: 700;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bannerPuntos {
+  display: flex;
+  gap: 6px;
+}
+
+.bannerPunto {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.bannerPuntoActivo {
+  background: var(--color-bg-card);
+}
+
+.motivo {
+  padding: 14px 16px;
+  border-radius: var(--radius-box);
+  font-weight: 600;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.motivoVetado {
+  background: var(--color-vetado-bg);
+  color: var(--color-vetado-fg);
+}
+
+.motivoNeutro {
+  background: var(--color-neutro-bg);
+  color: var(--color-text-secondary);
+}
+
+.motivoRecomendado {
+  background: var(--color-recomendado-bg);
+  color: var(--color-recomendado-fg);
+}
+
+/* --- Producto no encontrado --- */
+
+.noEncontrado {
+  min-height: 100dvh;
+  background: var(--color-bg-app);
+  display: flex;
+  flex-direction: column;
+}
+
+.noEncontradoContenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.badge {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-card);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-brand);
+}
+
+.barraCargaTrack {
+  width: 100%;
+  max-width: 220px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-brand-soft);
+  overflow: hidden;
+}
+
+.barraCargaRelleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-brand), var(--color-accent));
+  /* No es un progreso real (no sabemos cuánto falta): avanza rápido al
+     principio y se frena cerca del final, para sentirse creíble, y se
+     queda ahí sin completar — si Gemini tarda más de lo normal, sigue
+     viéndose "casi lista" en vez de trabada en 0% o saltando a 100% de
+     golpe cuando el fetch responda. */
+  animation: avanzarCarga 8s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes avanzarCarga {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 88%;
+  }
+}
+
+.tituloNoEncontrado {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--color-ink);
+}
+
+.textoNoEncontrado {
+  max-width: 280px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.botonPrimario {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 8px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius-card);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: var(--shadow-brand);
+  cursor: pointer;
+  text-align: center;
+}
+
+.botonPrimario:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+
+.campoNombre {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.etiquetaNombre {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.inputNombre {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-box);
+  background: var(--color-bg-card);
+  color: var(--color-ink);
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.inputNombre:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.botonSecundario {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  color: var(--color-brand);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.botonSecundario:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.etiquetaProximamente {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-tertiary);
+}
+
+.caption {
+  padding: 18px 24px 28px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.errorFoto {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 14px;
+  border-radius: var(--radius-box);
+  background: var(--color-vetado-bg);
+  color: var(--color-vetado-fg);
+  font-weight: 600;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.avisoVinculo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-box);
+  background: var(--color-brand-soft);
+  text-align: center;
+}
+
+.avisoVinculoTexto {
+  font-weight: 600;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+
+.avisoVinculoBoton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: var(--shadow-brand);
+}
+
+.sinVerificar {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-box);
+  background: var(--color-alerta-bg);
+  color: var(--color-alerta-fg);
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.atribucionOff {
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
+}
+
+.atribucionOffEnlace {
+  color: var(--color-text-tertiary);
+  text-decoration: underline;
+}

@@ -1,0 +1,255 @@
+/* Estilos exclusivos de esta ruta interna — a propósito no comparte
+   módulos CSS con ninguna otra pantalla de la app. Reutiliza los tokens
+   globales (var(--color-*)) definidos en app/globals.css, que sí están
+   pensados para compartirse en toda la app. */
+
+.pagina {
+  min-height: 100dvh;
+  background: var(--color-bg-app);
+  padding: 24px 18px 48px;
+}
+
+.envoltorio {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-brand);
+}
+
+.titulo {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.subtitulo {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: 14px 16px;
+  border-radius: var(--radius-box);
+  background: var(--color-vetado-bg);
+  color: var(--color-vetado-fg);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.resumen {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.06);
+}
+
+.cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cifraNumero {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--color-brand);
+  line-height: 1;
+}
+
+.cifraMeta {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+}
+
+.barraFila {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.barraEtiquetas {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+}
+
+.barra {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-brand-soft);
+}
+
+.barraRelleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-brand), var(--color-accent));
+  transition: width 0.4s ease;
+}
+
+.barraMarca {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--color-ink);
+  opacity: 0.25;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--color-bg-app);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.punto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.chipManual .punto {
+  background: var(--color-recomendado);
+}
+
+.chipOcr .punto {
+  background: var(--color-alerta-fg);
+}
+
+.buscador {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-box);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.buscador:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.tablaEnvoltorio {
+  overflow-x: auto;
+  border-radius: var(--radius-box);
+  border: 1px solid var(--color-border);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+  background: var(--color-bg-card);
+}
+
+.tabla thead th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-tertiary);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-app);
+}
+
+.tabla tbody td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nombreProducto {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.marcaProducto {
+  color: var(--color-text-tertiary);
+  font-size: 11.5px;
+}
+
+.codigo {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.fecha {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pillManual {
+  background: var(--color-recomendado-bg);
+  color: var(--color-recomendado-fg);
+}
+
+.pillOcr {
+  background: var(--color-alerta-bg);
+  color: var(--color-alerta-fg);
+}
+
+.vacio {
+  text-align: center;
+  color: var(--color-text-tertiary);
+  padding: 24px;
+  font-size: 13px;
+}

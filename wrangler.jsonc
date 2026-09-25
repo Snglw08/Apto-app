@@ -1,0 +1,67 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "apto-app",
+	// Entrypoint propio, no el worker que genera OpenNext: envuelve ese worker
+	// para agregarle el handler `scheduled` del keep-alive. Ver custom-worker.ts.
+	"main": "./custom-worker.ts",
+	// nodejs_compat + una compatibility_date >= 2024-09-23 son obligatorias:
+	// sin las dos, el worker que genera @opennextjs/cloudflare no arranca.
+	"compatibility_date": "2024-09-23",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	// Valores de producción. En desarrollo, .dev.vars los sobreescribe y apunta
+	// al staging de Open Food Facts.
+	//
+	// Las claves de Supabase van acá, en claro, y NO como `wrangler secret`:
+	// la publishable/anon key está diseñada para viajar al navegador y la
+	// seguridad la da Row Level Security, no el secreto de la clave. La única
+	// credencial que sí es secreta en este proyecto es GEMINI_API_KEY, que se
+	// inyecta con `wrangler secret put` y solo se lee desde server routes.
+	//
+	// El par sin prefijo (SUPABASE_URL / SUPABASE_ANON_KEY) es el mismo valor:
+	// las NEXT_PUBLIC_* las incrusta Next en el bundle del cliente, mientras
+	// que el código de servidor (lib/supabase/server.ts) las lee en runtime
+	// vía getCloudflareContext().env para no depender de ese bundle.
+	"vars": {
+		"OFF_API_BASE_URL": "https://world.openfoodfacts.org",
+		"NEXT_PUBLIC_SUPABASE_URL": "https://TU-PROYECTO.supabase.co",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_TU_KEY",
+		"SUPABASE_URL": "https://TU-PROYECTO.supabase.co",
+		"SUPABASE_ANON_KEY": "sb_publishable_TU_KEY"
+	},
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	// Cache incremental de Next.js. Crear con:
+	//   npx wrangler kv namespace create NEXT_INC_CACHE_KV
+	// y pegar el id que devuelve. Se habilita en open-next.config.ts.
+	"kv_namespaces": [
+		{
+			"binding": "NEXT_INC_CACHE_KV",
+			"id": "TU_KV_NAMESPACE_ID"
+		}
+	],
+	// Frena fuerza bruta contra /api/vinculacion (código de 4 caracteres,
+	// ~924.000 combinaciones — no es un límite duro, pero corta las ráfagas
+	// automatizadas). `period` solo admite 10 o 60 segundos.
+	"ratelimits": [
+		{
+			"name": "VINCULACION_RATE_LIMITER",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		}
+	],
+	// Keep-alive cada 3 días: el free tier de Supabase pausa el proyecto a los
+	// 7 días sin actividad y un ping HTTP no cuenta — tiene que ser un query
+	// real. Handler `scheduled` en custom-worker.ts.
+	"triggers": {
+		"crons": [
+			"0 12 */3 * *"
+		]
+	}
+}

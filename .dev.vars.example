@@ -1,0 +1,29 @@
+# Copiar a .dev.vars (gitignored) y completar. Lo lee wrangler en `npm run preview`
+# y Next.js en `npm run dev`.
+
+# --- Supabase ---------------------------------------------------------------
+# Las cuatro son el mismo par de valores. Las NEXT_PUBLIC_* las incrusta Next en
+# el bundle del navegador; las otras dos las lee el código de servidor en runtime.
+# La publishable/anon key no es un secreto: está pensada para el cliente y la
+# seguridad la da Row Level Security.
+SUPABASE_URL=https://TU-PROYECTO.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_TU_KEY
+NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_TU_KEY
+
+# Sí es secreta. Solo se usa server-side para saltear RLS en el alta de
+# productos propios desde el OCR.
+SUPABASE_SERVICE_ROLE_KEY=
+
+# --- Open Food Facts --------------------------------------------------------
+# En desarrollo apuntar SIEMPRE al staging, no a producción: el servidor real
+# es una instancia comunitaria y pegarle en cada guardado de archivo es abusivo.
+# El staging pide Basic Auth off/off.
+OFF_API_BASE_URL=https://world.openfoodfacts.net
+OFF_API_BASIC_AUTH_USER=off
+OFF_API_BASIC_AUTH_PASS=off
+
+# --- Gemini -----------------------------------------------------------------
+# OCR de etiquetas. Nunca con prefijo NEXT_PUBLIC_, nunca en el cliente.
+# En producción: npx wrangler secret put GEMINI_API_KEY
+GEMINI_API_KEY=

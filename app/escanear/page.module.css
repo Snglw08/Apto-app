@@ -1,0 +1,207 @@
+/* position: fixed + inset: 0 en vez de position: relative + height: 100dvh:
+   en pruebas reales con una implementación anterior, 100dvh no se calculaba
+   bien en algunos navegadores móviles y rompía el layout. fixed + inset:0
+   ancla la pantalla al viewport sin depender de esa unidad. */
+.pantalla {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-camera);
+  overflow: hidden;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Capa de UI sobre el video, del tamaño completo de la pantalla (no un
+   flex-column con header/centro/footer apilados) para que el marco guía se
+   pueda posicionar por porcentaje exacto y coincida con la banda que
+   realmente se recorta y se escanea (ver RECORTE en EscaneoCliente.tsx). */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px;
+}
+
+.titulo {
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.cerrar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-box);
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-on-brand);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* pointer-events: none — .centro cubre TODA la pantalla (inset:0) y, al
+   venir después de .header en el HTML, sus clics tapaban al botón ✕ (el
+   marco es solo decorativo, no tiene nada clickeable adentro). Sin esto,
+   el toque nunca llegaba al link de cerrar aunque se viera encima. */
+.centro {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Coincide con RECORTE en EscaneoCliente.tsx (6%-94% horizontal,
+   28%-72% vertical): lo que se ve enmarcado es lo que se escanea. El
+   box-shadow con spread enorme oscurece todo lo que queda fuera del marco. */
+.marco {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 28%;
+  bottom: 28%;
+  border-radius: var(--radius-card);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+}
+
+.esquina {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-color: var(--color-accent);
+  border-style: solid;
+  border-width: 0;
+}
+
+.esquinaTL {
+  top: 0;
+  left: 0;
+  border-top-width: 5px;
+  border-left-width: 5px;
+  border-top-left-radius: 20px;
+}
+
+.esquinaTR {
+  top: 0;
+  right: 0;
+  border-top-width: 5px;
+  border-right-width: 5px;
+  border-top-right-radius: 20px;
+}
+
+.esquinaBL {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 5px;
+  border-left-width: 5px;
+  border-bottom-left-radius: 20px;
+}
+
+.esquinaBR {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 5px;
+  border-right-width: 5px;
+  border-bottom-right-radius: 20px;
+}
+
+.lineaEscaneo {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  box-shadow: var(--glow-accent);
+  animation: escanear 2.2s ease-in-out infinite;
+}
+
+@keyframes escanear {
+  0%,
+  100% {
+    top: 6px;
+  }
+  50% {
+    top: calc(100% - 10px);
+  }
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 48px;
+  pointer-events: none;
+}
+
+.pill {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 15px;
+  padding: 16px 28px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-scan-pill);
+  text-align: center;
+}
+
+.caption {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.errorBox {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  text-align: center;
+  color: var(--color-on-brand);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--color-bg-camera);
+  pointer-events: none;
+}
+
+/* Panel de debug temporal. */
+.debug {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--color-accent);
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: var(--radius-box);
+  word-break: break-word;
+}

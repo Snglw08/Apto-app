@@ -1,0 +1,50 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — ninguno se versiona. Las plantillas sí: .env.example y
+# .dev.vars.example documentan qué variables hacen falta, sin valores.
+.env*
+.dev.vars
+!.env.example
+!.dev.vars.example
+
+# cloudflare / opennextjs
+.open-next/
+.wrangler/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+# Generado por `npm run cf-typegen` (wrangler types) a partir de wrangler.jsonc
+# y .dev.vars. Son ~550 KB de tipos del runtime de Workers: se regeneran, no
+# se versionan. Ver "Puesta en marcha" en el README.
+cloudflare-env.d.ts
