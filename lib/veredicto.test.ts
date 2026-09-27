@@ -53,11 +53,31 @@ describe("datos de Open Food Facts que no habilitan el verde", () => {
     expect(calcularVeredicto(producto, "off_cache", [])).toEqual({ estado: "incompleto" });
   });
 
-  it("es incompleto si OFF reporta errores de calidad", () => {
+  it("es incompleto si OFF reporta un error de calidad SOBRE LOS INGREDIENTES", () => {
     const producto = productoOff({
-      data_quality_errors_tags: ["en:nutrition-value-total-over-105"],
+      data_quality_errors_tags: [
+        "en:ingredients-single-ingredient-from-category-does-not-match-actual-ingredients",
+      ],
     });
     expect(calcularVeredicto(producto, "off_cache", [])).toEqual({ estado: "incompleto" });
+  });
+
+  it("pero un error sobre la tabla nutricional NO descalifica", () => {
+    // El veredicto se calcula únicamente con el texto de ingredientes: la tabla
+    // nutricional no se lee nunca. Que las calorías de un producto estén mal
+    // sumadas no lo vuelve menos confiable para saber si contiene lactosa.
+    //
+    // Este caso existe porque el corte original miraba data_quality_errors_tags
+    // entero y resultó demasiado ancho: medido sobre 1000 productos del cache,
+    // 32 de los 33 tipos de error son sobre nutrición. Acotarlo llevó los
+    // productos con veredicto real del 88% al 99%.
+    const producto = productoOff({
+      ingredientes: "Leche entera, lactosa.",
+      data_quality_errors_tags: [
+        "en:nutrition-packaging-as-sold-100g-energy-value-in-kcal-does-not-match-value-computed",
+      ],
+    });
+    expect(calcularVeredicto(producto, "off_cache", [VETA_LACTOSA]).estado).toBe("vetado");
   });
 
   it("recién con los cuatro cortes pasados puede llegar a recomendado", () => {

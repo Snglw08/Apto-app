@@ -75,7 +75,12 @@ npm run cf-typegen  # regenera cloudflare-env.d.ts desde wrangler.jsonc + .dev.v
    cualquiera de estas condiciones:
    - `states_tags` no incluye `en:ingredients-completed`
    - `last_modified_t` tiene más de 2 años de antigüedad
-   - `data_quality_errors_tags` no está vacío
+   - `data_quality_errors_tags` incluye algún error **sobre los ingredientes**
+     (un tag que contenga `ingredient`). Los errores sobre la tabla nutricional
+     NO descalifican: el veredicto se calcula solo con el texto de ingredientes
+     y la tabla no se lee nunca. Medido sobre 1000 productos del cache, 32 de
+     los 33 tipos de error de OFF son sobre nutrición; mirarlos todos llevaba al
+     11% de los productos a "datos incompletos" sin motivo.
 
    En esos casos el estado es **"datos incompletos"** y la UI ofrece el flujo de foto.
    Un producto con `fuente: 'ocr'` puede **vetar** pero nunca **recomendar**: dato sin

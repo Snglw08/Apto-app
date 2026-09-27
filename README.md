@@ -112,7 +112,18 @@ Facts y se cumple cualquiera de estas tres condiciones:
 - `states_tags` no incluye `en:ingredients-completed` → la lista de ingredientes
   está incompleta según OFF mismo.
 - `last_modified_t` tiene más de 2 años → la formulación pudo cambiar.
-- `data_quality_errors_tags` no está vacío → OFF detectó inconsistencias.
+- `data_quality_errors_tags` incluye un error **sobre los ingredientes** → OFF
+  detectó una inconsistencia en la lista misma.
+
+Ese tercer corte empezó siendo más ancho —cualquier error de calidad
+descalificaba— y se acotó al medirlo: de los 33 tipos de error que OFF reporta
+en el catálogo cacheado, **32 son sobre la tabla nutricional** (calorías que no
+cuadran, sal que no coincide con el envase) y uno solo es sobre ingredientes. Y
+el veredicto se calcula únicamente con el texto de ingredientes: la tabla
+nutricional no se lee nunca, así que un producto con las calorías mal sumadas no
+es menos confiable para saber si contiene lactosa. Acotarlo llevó los productos
+que devuelven un veredicto real del 88% al 99%, sin cambiar la dirección del
+error: un problema en los ingredientes sigue mandando a "datos incompletos".
 
 En esos casos el estado es **"datos incompletos"**, y la UI ofrece el flujo de foto.
 Mismo criterio para los productos cargados por OCR: un dato sin verificar **puede

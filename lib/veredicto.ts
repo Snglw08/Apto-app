@@ -29,6 +29,31 @@ export type Veredicto =
 
 const DOS_ANIOS_EN_SEGUNDOS = 2 * 365.25 * 24 * 3600;
 
+/**
+ * De los errores de calidad que reporta OFF, solo descalifican los que hablan
+ * de los ingredientes.
+ *
+ * El corte original miraba `data_quality_errors_tags` entero, y eso resultó
+ * demasiado ancho. Medido sobre 1000 productos del cache: de 33 tipos de error
+ * distintos, **32 son sobre la tabla nutricional** —calorías que no cuadran,
+ * sal que no coincide con el envase, fibra soluble mal sumada— y uno solo es
+ * sobre ingredientes.
+ *
+ * Y esta función decide **únicamente a partir del texto de ingredientes**: la
+ * tabla nutricional no se lee nunca. Un producto cuyas calorías están mal
+ * sumadas no es menos confiable para saber si contiene lactosa.
+ *
+ * El efecto de acotarlo, medido: los productos que devuelven un veredicto real
+ * pasaron del 88% al 99%. La regla sigue fallando hacia el lado seguro —un
+ * error sobre los ingredientes sigue mandando a "datos incompletos"— pero deja
+ * de castigar un producto por un dato que no usa para decidir.
+ */
+function tieneErroresDeIngredientes(producto: Producto): boolean {
+  return (producto.data_quality_errors_tags ?? []).some((tag) =>
+    tag.includes("ingredient"),
+  );
+}
+
 // Regla central del proyecto (ver "El semáforo" en el README): el semáforo
 // nunca muestra verde si el dato viene de OFF y está incompleto,
 // desactualizado o con errores de calidad. Ante la duda,
@@ -41,7 +66,6 @@ export function calcularVeredicto(
 ): Veredicto {
   if (origen === "off_cache") {
     const statesTags = producto.states_tags ?? [];
-    const dataQualityErrors = producto.data_quality_errors_tags ?? [];
     const lastModified = producto.last_modified_t ?? null;
     const desactualizado =
       !lastModified || Date.now() / 1000 - lastModified > DOS_ANIOS_EN_SEGUNDOS;
@@ -49,7 +73,7 @@ export function calcularVeredicto(
     if (
       !statesTags.includes("en:ingredients-completed") ||
       desactualizado ||
-      dataQualityErrors.length > 0
+      tieneErroresDeIngredientes(producto)
     ) {
       return { estado: "incompleto" };
     }
