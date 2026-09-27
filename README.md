@@ -150,6 +150,21 @@ La misma distinción aplica en `/perfil` (que si no diría "tu plan está en cam
 y en el panel del nutricionista (que mostraría un plan vacío y lo invitaría a
 cargar reglas duplicadas).
 
+**Y falta un tercer modo de fallar, que es el que no se ve leyendo la función.**
+Todo lo anterior protege contra el dato que *falta*. Nada protegía contra el dato
+*falso*: la ruta que crea productos por foto es pública —tiene que serlo, es el
+flujo para cuando OFF no conoce un producto— y escribe en `productos_propios`.
+Como esa tabla se consultaba antes que `off_cache`, una fila escrita ahí tapaba
+al producto real. Medido con `calcularVeredicto` sobre una leche con lactosa
+vetada: el dato de OFF daba **vetado**, y una fila de OCR con los ingredientes
+cambiados daba **neutro, "con moderación, sin problema"**.
+
+La solución no fue cerrar el endpoint sino quitarle la consecuencia. El orden de
+resolución pasó a ser `manual` → `off_cache` → `ocr` → OFF: el dato sin verificar
+llena huecos pero no pisa dato verificado. Es el mismo criterio que la regla ya
+aplicaba —un dato por foto puede vetar pero no recomendar— extendido a que
+tampoco pueda sustituir.
+
 → [`lib/veredicto.ts`](lib/veredicto.ts), función `calcularVeredicto`, con sus tests
 en [`lib/veredicto.test.ts`](lib/veredicto.test.ts). Vive separada de la pantalla que
 la usa justamente para poder testearla sin montar React ni red.

@@ -108,6 +108,23 @@ export async function POST(
     return NextResponse.json({ error: "Código de barras inválido." }, { status: 400 });
   }
 
+  // El límite se evalúa ANTES de leer el archivo y de llamar a Gemini: no tiene
+  // sentido gastar tiempo y memoria procesando una foto que vamos a rechazar.
+  //
+  // Esta es la ruta más cara del proyecto —cada llamada consume una de las 20
+  // diarias del free tier de Gemini—, así que sin límite un script deja el OCR
+  // muerto por el resto del día. Contador propio, distinto del de
+  // /api/vinculacion, para que el tráfico de una ruta no castigue a la otra.
+  const { env } = getCloudflareContext();
+  const ip = request.headers.get("cf-connecting-ip") ?? "desconocida";
+  const { success } = await env.OCR_RATE_LIMITER.limit({ key: ip });
+  if (!success) {
+    return NextResponse.json(
+      { error: "Demasiadas fotos seguidas. Espera un minuto y vuelve a intentar." },
+      { status: 429 },
+    );
+  }
+
   const formData = await request.formData().catch(() => null);
   const foto = formData?.get("foto");
   const nombreCrudo = formData?.get("nombre");
@@ -123,7 +140,6 @@ export async function POST(
     return NextResponse.json({ error: "La foto pesa demasiado. Intenta con otra." }, { status: 400 });
   }
 
-  const { env } = getCloudflareContext();
   const base64 = bufferABase64(await foto.arrayBuffer());
 
   const cuerpo = JSON.stringify({

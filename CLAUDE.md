@@ -96,6 +96,13 @@ npm run cf-typegen  # regenera cloudflare-env.d.ts desde wrangler.jsonc + .dev.v
    - `off_cache` — cache de Open Food Facts (licencia ODbL)
    - tablas del circuito clínico (nutricionistas, pacientes, reglas, asignaciones)
 
+   **Orden de prioridad al resolver un código de barras:** `productos_propios`
+   con `fuente: 'manual'` → `off_cache` → `productos_propios` con `fuente: 'ocr'`
+   → la API de OFF. El dato de OCR solo llena huecos: **nunca tapa un producto
+   que OFF sí tiene**. La ruta que lo escribe es pública, así que si ganara
+   alcanzaría para dar vuelta un veredicto escribiendo ingredientes falsos para
+   un código real.
+
    Prohibido copiar campos de `off_cache` a `productos_propios` o viceversa, y
    prohibido "rellenar huecos" de una tabla con la otra. Mezclar dato OFF con dato
    propio crea una base derivada y el share-alike de ODbL obligaría a publicar la

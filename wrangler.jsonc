@@ -65,6 +65,28 @@
 				"limit": 10,
 				"period": 60
 			}
+		},
+		// Frena el abuso del OCR, que es la ruta más cara del proyecto: cada
+		// llamada consume una de las 20 diarias del free tier de Gemini. Sin
+		// esto, un script agota la cuota en segundos y deja el OCR muerto por
+		// el resto del día.
+		//
+		// Contador propio y no el de vinculación: son rutas con costos
+		// distintos y compartir cuota haría que el tráfico de una castigue a
+		// la otra.
+		//
+		// Honestidad sobre lo que protege: `period` solo admite 10 o 60
+		// segundos, así que un límite por minuto no puede defender de verdad un
+		// presupuesto DIARIO. A 3 por minuto, un atacante decidido igual agota
+		// las 20 en unos siete minutos. Lo que esto corta es el abuso casual y
+		// el bucle accidental, que es el caso realista.
+		{
+			"name": "OCR_RATE_LIMITER",
+			"namespace_id": "4822",
+			"simple": {
+				"limit": 3,
+				"period": 60
+			}
 		}
 	],
 	// Keep-alive cada 3 días: el free tier de Supabase pausa el proyecto a los

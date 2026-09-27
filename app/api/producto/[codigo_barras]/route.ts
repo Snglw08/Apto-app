@@ -114,8 +114,25 @@ export async function GET(
   // KEY en ambas tablas, o sea un B-tree con búsqueda exacta). Encadenarlas
   // pagaba esa latencia dos veces para nada.
   //
-  // La PRIORIDAD no cambia: el dato propio sigue ganando sobre el caché de OFF.
-  // Eso ahora se decide al mirar los resultados, no al ordenar las consultas.
+  // La PRIORIDAD depende de la FUENTE del dato propio, no de la tabla:
+  //
+  //   manual  ->  off_cache  ->  ocr  ->  la API de OFF
+  //
+  // El dato cargado a mano es verificado y gana. El de OCR es texto que salió
+  // de una foto sin revisar, así que solo llena huecos: nunca tapa un producto
+  // que OFF sí tiene.
+  //
+  // Esto no es estético. La ruta que escribe el OCR
+  // (app/api/producto/[codigo_barras]/foto/route.ts) es pública y escribe con
+  // service_role, así que cualquiera puede crear una fila para un código real.
+  // Cuando el dato de OCR ganaba, eso alcanzaba para dar vuelta un veredicto:
+  // medido con calcularVeredicto sobre una leche con lactosa vetada, el dato de
+  // OFF daba VETADO y una fila de OCR con los ingredientes cambiados daba
+  // NEUTRO, "con moderación, sin problema".
+  //
+  // La regla 5 protege contra el dato que FALTA. Esto cierra el hueco del dato
+  // FALSO, y con el mismo criterio que ya usa esa regla: un dato sin verificar
+  // puede vetar, pero no habilita el verde ni pisa al verificado.
   //
   // Esto tampoco fusiona las tablas (regla 6): son dos consultas separadas que
   // devuelven filas de una o de otra, nunca combinadas. La relación sigue
@@ -131,7 +148,17 @@ export async function GET(
       { status: 500 },
     );
   }
-  if (propios.data) {
+  if (cache.error) {
+    return NextResponse.json(
+      { error: "Error consultando off_cache." },
+      { status: 500 },
+    );
+  }
+
+  const propio = propios.data as { fuente?: string } | null;
+
+  // 1) Dato propio verificado.
+  if (propio && propio.fuente !== "ocr") {
     return guardarYResponder(cacheBorde, clave, {
       encontrado: true,
       origen: "productos_propios",
@@ -139,17 +166,21 @@ export async function GET(
     });
   }
 
-  if (cache.error) {
-    return NextResponse.json(
-      { error: "Error consultando off_cache." },
-      { status: 500 },
-    );
-  }
+  // 2) El caché de OFF le gana al OCR.
   if (cache.data) {
     return guardarYResponder(cacheBorde, clave, {
       encontrado: true,
       origen: "off_cache",
       producto: cache.data,
+    });
+  }
+
+  // 3) Recién acá el OCR, para llenar el hueco.
+  if (propio) {
+    return guardarYResponder(cacheBorde, clave, {
+      encontrado: true,
+      origen: "productos_propios",
+      producto: propios.data,
     });
   }
 
