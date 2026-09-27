@@ -22,7 +22,7 @@ PWA instalable. Next.js 16 + TypeScript + Supabase, desplegada en Cloudflare Wor
 En 30 segundos, sin crear cuenta:
 
 1. Abrir **Conecta con tu nutricionista** e ingresar el código **`AP-4821`**.
-2. Volver al inicio y tocar **Abrir cámara**.
+2. Volver al inicio y tocar **Escanear**.
 3. Escanear cualquier producto envasado que tenga leche o lactosa en los
    ingredientes → sale en rojo, con el motivo.
 4. Escanear algo sin lácteos → sale en neutro o verde.
