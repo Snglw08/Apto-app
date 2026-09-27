@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Una corrida por rama: si llegan dos pushes seguidos, la primera se cancela.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint, tipos, tests y build
+    runs-on: ubuntu-latest
+
+    env:
+      # Wrangler manda telemetría anónima y en CI no aporta nada.
+      WRANGLER_SEND_METRICS: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 20 y no la última: el README dice "Node 20+" y package.json pinea
+      # @types/node en ^20. El CI verifica contra el piso soportado, no contra
+      # la versión que cada uno tenga instalada — si algo solo funciona en 22,
+      # que falle acá y no en la máquina de quien clone el repo.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # `ci` y no `install`: instala exactamente lo que dice package-lock.json
+      # y falla si el lock está desincronizado, en vez de resolverlo por su
+      # cuenta.
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Este paso no es opcional y no es obvio por qué existe.
+      #
+      # `cloudflare-env.d.ts` es la interfaz de tipos del entorno del Worker
+      # (env.SUPABASE_URL y compañía) y NO se versiona: son ~14.000 líneas
+      # generadas, de las cuales solo 24 son del proyecto. Se reconstruye con
+      # `wrangler types` a partir de wrangler.jsonc y .dev.vars.
+      #
+      # Un clon limpio no tiene .dev.vars —es gitignored, lleva secretos— así
+      # que sin estas dos líneas `tsc --noEmit` falla en CI aunque pase en local.
+      # Los valores de la plantilla son placeholders: acá solo importan los
+      # NOMBRES de las variables, que son los que definen la interfaz.
+      - name: Preparar el entorno de tipos
+        run: |
+          cp .dev.vars.example .dev.vars
+          cp .env.example .env.local
+          npm run cf-typegen
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      # `next build`, no `opennextjs-cloudflare build`: el segundo tarda varios
+      # minutos y lo que agrega —el empaquetado para workerd— se verifica con
+      # `npm run preview` antes de cada deploy, que es donde de verdad importa.
+      # Ojo: por eso este CI NO detectaría una regresión del adapter de
+      # OpenNext (ver la nota de --webpack en package.json).
+      - name: Build
+        run: npm run build
