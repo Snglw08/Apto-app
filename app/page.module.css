@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* Espacio para la barra inferior, que es fixed: sin esto el último
+     elemento de la pantalla queda debajo de ella. */
+  padding-bottom: var(--alto-barra);
 }
 
 .navSuperior {
@@ -65,56 +68,8 @@
   margin-bottom: 16px;
 }
 
-.tarjetaEscanear {
-  background: var(--color-brand);
-  border-radius: var(--radius-card);
-  padding: 40px 24px 32px;
-  min-height: 330px;
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: var(--shadow-brand);
-}
-
-.accionEscanear {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
 /* El símbolo, protagonista. Círculo porque --radius-button es píldora y el
    elemento es cuadrado: el radio se recorta al alto. */
-.simboloEscanear {
-  width: 124px;
-  height: 124px;
-  border-radius: var(--radius-button);
-  background: var(--color-accent);
-  color: var(--color-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-accent);
-}
-
-.etiquetaEscanear {
-  font-weight: 800;
-  font-size: 27px;
-  line-height: 1.1;
-  color: var(--color-on-brand);
-}
-
-.subtituloEscanear {
-  font-weight: 500;
-  font-size: 14.5px;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 240px;
-}
-
 .tarjetaConectado,
 .tarjetaSinVincular {
   display: flex;
@@ -227,4 +182,189 @@
   font-weight: 600;
   font-size: 12.5px;
   color: var(--color-text-tertiary);
+}
+
+/* --- Escaneos recientes --- */
+
+.historialEncabezado {
+  margin-top: 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.historialTitulo {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+.historialConteo {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.historial {
+  margin-top: 8px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card-soft);
+  overflow: hidden;
+}
+
+.historialItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--color-bg-app);
+}
+
+.historialItem:last-child {
+  border-bottom: none;
+}
+
+/* El color del punto es el veredicto, recalculado en cada render contra las
+   reglas vigentes — nunca un valor guardado. Ver lib/historial.ts. */
+.punto {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+}
+
+.puntoVetado {
+  background: var(--color-vetado);
+}
+
+.puntoNeutro {
+  background: var(--color-neutro);
+}
+
+.puntoRecomendado {
+  background: var(--color-recomendado);
+}
+
+.puntoIncompleto {
+  background: var(--color-accent);
+}
+
+.historialInfo {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.historialNombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historialMarca {
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--color-text-tertiary);
+}
+
+.historialCuando {
+  flex-shrink: 0;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.historialFlecha {
+  flex-shrink: 0;
+  font-size: 17px;
+  color: var(--color-text-tertiary);
+}
+
+/* --- Cómo funciona: el mismo lugar, la primera vez --- */
+
+.comoFunciona {
+  margin-top: 20px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card-soft);
+  overflow: hidden;
+}
+
+/* Banda de borde a borde, no un título con aire: lee como encabezado de sección
+   y le devuelve a esta pantalla el azul de marca que se fue con la tarjeta de
+   escaneo. */
+.comoFuncionaTitulo {
+  padding: 15px 20px;
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.comoFuncionaCuerpo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.pasoNumero {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.pasoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pasoTitulo {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-ink);
+}
+
+.pasoDetalle {
+  font-weight: 400;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.comoFuncionaNota {
+  margin-top: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius-box);
+  background: var(--color-bg-app);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
 }

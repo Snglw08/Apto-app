@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Espacio para la barra inferior, que es fixed: sin esto el último
+     elemento de la pantalla queda debajo de ella. */
+  padding-bottom: var(--alto-barra);
 }
 
 .encabezado {

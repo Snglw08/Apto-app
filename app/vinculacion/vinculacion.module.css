@@ -7,6 +7,9 @@
   padding: 32px 24px;
   background: var(--color-bg-card);
   text-align: center;
+  /* Espacio para la barra inferior, que es fixed: sin esto el último
+     elemento de la pantalla queda debajo de ella. */
+  padding-bottom: var(--alto-barra);
 }
 
 .header {

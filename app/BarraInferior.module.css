@@ -1,0 +1,70 @@
+.barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border);
+  /* El padding de abajo suma el área segura del teléfono (la barra de gestos de
+     iOS y Android). En un navegador de escritorio env() vale 0, así que el
+     fallback es el que manda. */
+  padding: 10px 0 calc(22px + env(safe-area-inset-bottom, 0px));
+}
+
+.pestana {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  color: var(--color-text-tertiary);
+}
+
+.activa {
+  color: var(--color-brand);
+}
+
+.etiqueta {
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.activa .etiqueta {
+  font-weight: 700;
+}
+
+/* --- Escaneo: la acción central, elevada --- */
+
+.pestanaEscanear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  /* Negativo: el círculo desborda la barra hacia arriba. */
+  margin-top: -30px;
+  color: var(--color-ink);
+}
+
+.circuloEscanear {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-button);
+  /* El borde del color de la barra recorta el círculo de lo que hay detrás
+     cuando la desborda. */
+  border: 4px solid var(--color-bg-card);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-accent);
+}
+
+.etiquetaEscanear {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--color-neutro-fg);
+}

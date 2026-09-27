@@ -71,6 +71,11 @@
      propio grosor. */
   --radius-hairline: 2px;
 
+  /* Alto de la barra inferior, incluido su padding. Las pantallas donde la
+     barra aparece reservan este espacio para que no tape contenido; como la
+     barra es fixed, sin esto el último elemento de cada pantalla queda debajo. */
+  --alto-barra: 84px;
+
   /* Sombras. Las cinco primeras son negro azulado (el mismo color de --color-ink
      con alfa) y solo se diferencian en peso y rol: -soft para tarjetas en reposo,
      -strong para la tarjeta protagonista de la pantalla, -overlay para lo que

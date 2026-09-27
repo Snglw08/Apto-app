@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import BarraInferior from "./BarraInferior";
 import ChunkErrorHandler from "./chunk-error-handler";
 import InstalarApp from "./InstalarApp";
 import "./globals.css";
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body>
         <ChunkErrorHandler />
         {children}
+        <BarraInferior />
         <InstalarApp />
       </body>
     </html>

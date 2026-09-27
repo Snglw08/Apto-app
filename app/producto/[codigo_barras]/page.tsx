@@ -14,6 +14,7 @@ import {
   IconoInicio,
   IconoX,
 } from "../../icons";
+import { registrarEscaneo } from "@/lib/historial";
 import {
   calcularVeredicto,
   type Origen,
@@ -164,6 +165,9 @@ export default function ProductoPage() {
           codigoBarras,
           estado: { tipo: "encontrado", producto: data.producto, origen: data.origen },
         });
+        // Al historial va el producto, nunca el veredicto: ese se recalcula en
+        // el inicio contra las reglas vigentes. Ver lib/historial.ts.
+        registrarEscaneo(data.producto, data.origen);
       })
       .catch(() => {
         if (activo) setResultado({ codigoBarras, estado: { tipo: "error" } });
