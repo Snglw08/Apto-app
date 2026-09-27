@@ -10,25 +10,28 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
-	// Valores de producción. En desarrollo, .dev.vars los sobreescribe y apunta
-	// al staging de Open Food Facts.
+	// Acá va SOLO lo que puede publicarse. Las credenciales de Supabase NO
+	// están en este archivo a propósito: el repo es público y, aunque la
+	// publishable key esté diseñada para viajar al navegador y la proteja Row
+	// Level Security, publicarla revelaría contra qué proyecto corre esta app.
 	//
-	// Las claves de Supabase van acá, en claro, y NO como `wrangler secret`:
-	// la publishable/anon key está diseñada para viajar al navegador y la
-	// seguridad la da Row Level Security, no el secreto de la clave. La única
-	// credencial que sí es secreta en este proyecto es GEMINI_API_KEY, que se
-	// inyecta con `wrangler secret put` y solo se lee desde server routes.
+	// Las cuatro van como secretos, igual que las que sí son secretas:
 	//
-	// El par sin prefijo (SUPABASE_URL / SUPABASE_ANON_KEY) es el mismo valor:
-	// las NEXT_PUBLIC_* las incrusta Next en el bundle del cliente, mientras
-	// que el código de servidor (lib/supabase/server.ts) las lee en runtime
-	// vía getCloudflareContext().env para no depender de ese bundle.
+	//   npx wrangler secret put SUPABASE_URL
+	//   npx wrangler secret put SUPABASE_ANON_KEY
+	//   npx wrangler secret put NEXT_PUBLIC_SUPABASE_URL
+	//   npx wrangler secret put NEXT_PUBLIC_SUPABASE_ANON_KEY
+	//   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY   <- esta sí es secreta
+	//   npx wrangler secret put GEMINI_API_KEY              <- esta también
+	//
+	// Dato que costó descubrir: Cloudflare RECHAZA un secreto que se llame igual
+	// que un `var` ("Binding name already in use", código 10053). No hay
+	// precedencia entre ambos, hay conflicto — por eso estas claves no pueden
+	// estar en los dos lados "por las dudas".
+	//
+	// En desarrollo las lee .dev.vars (gitignored). Ver .dev.vars.example.
 	"vars": {
-		"OFF_API_BASE_URL": "https://world.openfoodfacts.org",
-		"NEXT_PUBLIC_SUPABASE_URL": "https://kjsnsvejjzwbgwqfaiyv.supabase.co",
-		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_2PBLrBy7i_Ki6_QO0VFFEA_UvrPiP91",
-		"SUPABASE_URL": "https://kjsnsvejjzwbgwqfaiyv.supabase.co",
-		"SUPABASE_ANON_KEY": "sb_publishable_2PBLrBy7i_Ki6_QO0VFFEA_UvrPiP91"
+		"OFF_API_BASE_URL": "https://world.openfoodfacts.org"
 	},
 	"assets": {
 		"directory": ".open-next/assets",

@@ -376,29 +376,46 @@ correo que figura en `seed.sql`, y después correr `seed.sql`.
 Para desplegar, además:
 
 ```bash
-npx wrangler kv namespace create NEXT_INC_CACHE_KV   # pegar el id en wrangler.jsonc
+npx wrangler kv namespace create apto-inc-cache      # pegar el id en wrangler.jsonc
+
+# Las seis credenciales van como secretos, no en wrangler.jsonc:
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_ANON_KEY
+npx wrangler secret put NEXT_PUBLIC_SUPABASE_URL
+npx wrangler secret put NEXT_PUBLIC_SUPABASE_ANON_KEY
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put GEMINI_API_KEY
+
 npm run deploy
 ```
 
-Las claves de Supabase del proyecto son dos y no se tratan igual, porque no son lo
-mismo:
+Las claves de Supabase son dos y **no son lo mismo**, aunque acá las dos terminen
+como secretos:
 
-- La **publishable/anon key** va en `vars` de `wrangler.jsonc`, en claro. Está diseñada
-  para viajar al navegador y la seguridad no la da el secreto de la clave, la da Row
-  Level Security.
-- La **service_role key** es secreta de verdad, porque **bypasea RLS**: con ella una
-  consulta ve todas las filas de todas las tablas. Va por `wrangler secret put`, nunca
-  en `vars` ni en el repo. La usan las rutas que necesitan hacer algo que RLS no puede
-  expresar: validar un código de invitación con un lookup exacto sin exponer un listado
-  de pacientes (ver la decisión 4), escribir en `off_cache`, guardar lo que devuelve el
-  OCR, y crear o borrar un paciente —que son dos tablas en una operación—.
+- La **publishable/anon key** no es un secreto: está diseñada para viajar al navegador
+  y la seguridad no la da ocultarla, la da Row Level Security. Verificado: con esa
+  clave se pueden leer `off_cache` y `productos_propios` —datos públicos de Open Food
+  Facts— y las tablas del circuito clínico devuelven **cero filas aunque tengan
+  datos**, porque RLS las esconde. Escribir devuelve 401.
+- La **service_role key** sí es secreta, porque **bypasea RLS**: con ella una consulta
+  ve todas las filas de todas las tablas. La usan las rutas que necesitan hacer algo
+  que RLS no puede expresar — validar un código de invitación sin exponer un listado
+  de pacientes (ver la decisión 4), escribir en `off_cache`, guardar lo que devuelve
+  el OCR, y crear o borrar un paciente, que son dos tablas en una operación.
 
-O sea que el proyecto tiene **dos** credenciales secretas, `SUPABASE_SERVICE_ROLE_KEY` y
-`GEMINI_API_KEY`. Las dos se leen únicamente desde Route Handlers, vía
-`getCloudflareContext().env`, y ninguna entra al bundle del cliente. Si falta cualquiera
-de las dos en producción, las rutas que la usan responden 500.
+Entonces, ¿por qué la anon key también va como secreto si no lo es? Por una razón
+distinta de la seguridad: **este repo es público y `wrangler.jsonc` se versiona**.
+Publicar ahí la URL del proyecto revelaría contra qué instancia de Supabase corre la
+demo, y eso invita a consumirle la cuota del free tier. No es un riesgo de datos, es
+uno de disponibilidad.
+
+Un detalle que cuesta descubrir: Cloudflare **rechaza un secreto que se llame igual que
+un `var`** ("Binding name already in use", código 10053). No hay precedencia entre
+ambos —hay conflicto— así que una misma clave no puede estar en los dos lados por las
+dudas: o está en `wrangler.jsonc`, o es un secreto.
+
+Las seis se leen igual desde el código, con `getCloudflareContext().env`, y ninguna
+entra al bundle del cliente.
 
 ## Comandos
 
