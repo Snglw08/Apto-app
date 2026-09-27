@@ -264,7 +264,13 @@ export default function ProductoPage() {
           </button>
         </div>
 
-        <p className={styles.caption}>Producto agregado por ti, sin verificar</p>
+        {/* El texto de acá abajo decía "Producto agregado por ti, sin
+            verificar", y en esta pantalla todavía no se agregó nada: el
+            producto no existe en ninguna tabla ni en Open Food Facts. Ese
+            texto describe lo que pasa DESPUÉS de la foto, no antes. */}
+        <p className={styles.caption}>
+          Este código no está en Open Food Facts ni en nuestra base
+        </p>
       </div>
     );
   }
