@@ -73,11 +73,27 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Una página del catálogo. Reintenta ante 429/5xx, que OFF devuelve seguido. */
-async function traerPagina(pagina, intento = 1) {
+/**
+ * El catálogo se recorre POR TRAMOS, no de corrido, y esa es la parte que
+ * importa entender.
+ *
+ * OFF permite paginar hasta ~10 páginas (1000 productos) por consulta; más
+ * allá responde 401. Medido: con una sola consulta de "todo Chile" se corta en
+ * la página 11. La salida no es insistir —es un servidor comunitario— sino
+ * partir la consulta en tramos que quepan cada uno en ese límite.
+ *
+ * La nota nutricional sirve bien como eje de partición: es un campo que OFF
+ * indexa, cubre todo el catálogo (los productos sin nota caen en 'unknown') y
+ * ningún tramo pasa de 9 páginas para Chile.
+ */
+const TRAMOS = ["a", "b", "c", "d", "e", "unknown"];
+
+/** Una página de un tramo. Reintenta ante 429/5xx, que OFF devuelve seguido. */
+async function traerPagina(pagina, tramo, intento = 1) {
   const filtros = [
     `countries_tags_en=${encodeURIComponent(PAIS)}`,
     SOLO_COMPLETOS ? "states_tags=en:ingredients-completed" : "",
+    tramo ? `nutrition_grades_tags=${tramo}` : "",
   ]
     .filter(Boolean)
     .join("&");
@@ -90,7 +106,7 @@ async function traerPagina(pagina, intento = 1) {
       const espera = PAUSA_MS * 2 ** intento;
       console.log(`    HTTP ${res.status}, reintento ${intento} en ${espera}ms…`);
       await dormir(espera);
-      return traerPagina(pagina, intento + 1);
+      return traerPagina(pagina, tramo, intento + 1);
     }
     if (res.status === 401 || res.status === 403) {
       const e = new Error(`OFF cortó la paginación con ${res.status} en la página ${pagina}`);
@@ -138,44 +154,80 @@ async function guardar(filas) {
 
 // --- main -------------------------------------------------------------------
 console.log(`Catálogo: ${PAIS}${SOLO_COMPLETOS ? " (solo con ingredientes completos)" : ""}`);
+console.log(`Recorrido por ${TRAMOS.length} tramos, para no pasar el límite de paginación de OFF
+`);
 
-const primera = await traerPagina(1);
-const total = Math.min(primera.count ?? 0, LIMITE);
-const paginas = Math.ceil(total / POR_PAGINA);
-console.log(`${primera.count} productos en OFF, se van a cargar ${total} en ${paginas} páginas\n`);
-
-let pendientes = [];
 let guardados = 0;
 let sinCodigo = 0;
+const vistos = new Set();
 
-for (let pagina = DESDE; pagina <= paginas; pagina++) {
-  const datos = pagina === 1 ? primera : await traerPagina(pagina);
-  const productos = datos.products ?? [];
+for (const tramo of TRAMOS) {
+  let primera;
+  try {
+    primera = await traerPagina(1, tramo);
+  } catch (e) {
+    console.log(`
+  tramo ${tramo}: no se pudo abrir (${e.message}), se saltea`);
+    continue;
+  }
 
-  for (const p of productos) {
-    if (!p.code) {
-      sinCodigo++;
-      continue;
+  const total = primera.count ?? 0;
+  const paginas = Math.ceil(total / POR_PAGINA);
+  if (!total) {
+    console.log(`  tramo ${tramo}: vacío`);
+    continue;
+  }
+
+  let pendientes = [];
+  let corto = false;
+
+  for (let pagina = 1; pagina <= paginas; pagina++) {
+    let datos;
+    try {
+      datos = pagina === 1 ? primera : await traerPagina(pagina, tramo);
+    } catch (e) {
+      // Un tramo que se corta no debe tirar abajo los demás: se guarda lo que
+      // haya y se sigue con el siguiente.
+      console.log(`
+  tramo ${tramo}: cortado en la página ${pagina} (${e.message})`);
+      corto = true;
+      break;
     }
+
+    for (const prod of datos.products ?? []) {
+      if (!prod.code) {
+        sinCodigo++;
+        continue;
+      }
+      // Un producto puede aparecer en más de un tramo si OFF le cambia la nota
+      // entre consultas. Se descarta acá para no mandarlo dos veces.
+      if (vistos.has(String(prod.code))) continue;
+      vistos.add(String(prod.code));
+      pendientes.push(aFilaDeCache(prod));
+    }
+
+    if (pendientes.length >= LOTE_UPSERT) {
+      await guardar(pendientes);
+      guardados += pendientes.length;
+      pendientes = [];
+    }
+
+    process.stdout.write(
+      `  tramo ${tramo}: página ${pagina}/${paginas} — ${guardados + pendientes.length} productos   `,
+    );
     if (guardados + pendientes.length >= LIMITE) break;
-    pendientes.push(aFilaDeCache(p));
+    if (pagina < paginas) await dormir(PAUSA_MS);
   }
 
-  if (pendientes.length >= LOTE_UPSERT || pagina === paginas) {
-    // Un mismo código puede venir repetido entre páginas; el upsert de
-    // Postgres falla si el MISMO lote trae duplicados, así que se deduplica
-    // acá antes de mandar.
-    const unicos = [...new Map(pendientes.map((f) => [f.codigo_barras, f])).values()];
-    await guardar(unicos);
-    guardados += unicos.length;
-    pendientes = [];
+  if (pendientes.length) {
+    await guardar(pendientes);
+    guardados += pendientes.length;
   }
-
-  const pct = Math.round((pagina / paginas) * 100);
-  process.stdout.write(`\r  página ${pagina}/${paginas} (${pct}%) — ${guardados} guardados   `);
+  console.log(`  tramo ${tramo}: ${paginas} páginas, ${guardados} acumulados${corto ? " (cortado)" : ""}        `);
 
   if (guardados >= LIMITE) break;
-  if (pagina < paginas) await dormir(PAUSA_MS);
+  await dormir(PAUSA_MS);
 }
 
-console.log(`\n\n${guardados} productos en off_cache${sinCodigo ? ` (${sinCodigo} sin código, salteados)` : ""}`);
+console.log(`
+${guardados} productos en off_cache${sinCodigo ? ` (${sinCodigo} sin código, salteados)` : ""}`);
