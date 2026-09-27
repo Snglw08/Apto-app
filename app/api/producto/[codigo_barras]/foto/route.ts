@@ -39,10 +39,21 @@ function bufferABase64(buffer: ArrayBuffer): string {
   return btoa(binario);
 }
 
-/** Cuántos reintentos ante saturación, sin contar el primer intento. */
-const REINTENTOS = 2;
-/** Espera del primer reintento; el segundo duplica. */
-const ESPERA_BASE_MS = 900;
+/**
+ * Un solo reintento ante saturación, y el número está elegido por la cuota, no
+ * por la red.
+ *
+ * El free tier de Gemini da 20 llamadas diarias. Cada reintento las consume
+ * igual que un intento bueno, así que reintentar de más convierte un problema
+ * de disponibilidad en uno de cuota: con 2 reintentos, un día con el servicio
+ * caído se come el presupuesto entero sin haber leído una sola etiqueta.
+ *
+ * Con 1, un día normal rinde las mismas 20 lecturas que sin reintento —el
+ * reintento solo se dispara ante 503— y un día saturado rinde 10, pero esas 10
+ * funcionan. La medición mostró que el segundo intento ya resolvía.
+ */
+const REINTENTOS = 1;
+const ESPERA_MS = 900;
 
 /**
  * Llama a Gemini reintentando si responde 503.
@@ -54,7 +65,8 @@ const ESPERA_BASE_MS = 900;
  * un segundo. Medido: el mismo modelo alternaba 503 y 200 minuto a minuto.
  *
  * Solo se reintenta el 503. Un 400 (imagen inválida) o un 403 (key mala) no
- * mejoran esperando, y reintentarlos solo haría esperar al usuario de gusto.
+ * mejoran esperando: reintentarlos haría esperar al usuario de gusto y, peor,
+ * gastaría cuota diaria en un pedido que va a fallar igual.
  *
  * El 429 tampoco se reintenta acá: tiene su propio tratamiento más abajo,
  * porque en el free tier de Gemini suele ser la cuota diaria agotada y esa no
@@ -65,7 +77,7 @@ async function pedirAGemini(cuerpo: string, apiKey: string): Promise<Response> {
 
   for (let intento = 0; intento <= REINTENTOS; intento++) {
     if (intento > 0) {
-      await new Promise((r) => setTimeout(r, ESPERA_BASE_MS * 2 ** (intento - 1)));
+      await new Promise((r) => setTimeout(r, ESPERA_MS));
     }
 
     respuesta = await fetch(GEMINI_URL, {
