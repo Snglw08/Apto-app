@@ -1,7 +1,7 @@
 /**
  * Precarga `off_cache` con el catálogo de Open Food Facts de un país.
  *
- *   node scripts/cargar-off.mjs [--pais=chile] [--solo-completos] [--limite=N]
+ *   node scripts/cargar-off.mjs [--pais=chile] [--solo-completos] [--limite=N] [--desde=N]
  *
  * Por qué existe: el caché se llena solo al escanear (ver la ruta
  * app/api/producto/[codigo_barras]/route.ts), pero eso significa que el PRIMER
@@ -44,6 +44,9 @@ const args = Object.fromEntries(
 const PAIS = args.pais ?? "chile";
 const SOLO_COMPLETOS = Boolean(args["solo-completos"]);
 const LIMITE = args.limite ? Number(args.limite) : Infinity;
+// OFF corta las búsquedas masivas anónimas con un 401 (se vio a la página 11).
+// --desde permite retomar donde quedó sin volver a pedir lo ya cargado.
+const DESDE = args.desde ? Number(args.desde) : 1;
 
 // --- credenciales, desde .dev.vars ------------------------------------------
 function leerDevVars() {
@@ -88,6 +91,12 @@ async function traerPagina(pagina, intento = 1) {
       console.log(`    HTTP ${res.status}, reintento ${intento} en ${espera}ms…`);
       await dormir(espera);
       return traerPagina(pagina, intento + 1);
+    }
+    if (res.status === 401 || res.status === 403) {
+      const e = new Error(`OFF cortó la paginación con ${res.status} en la página ${pagina}`);
+      e.pagina = pagina;
+      e.esBloqueo = true;
+      throw e;
     }
     throw new Error(`OFF respondió ${res.status} en la página ${pagina}`);
   }
@@ -139,7 +148,7 @@ let pendientes = [];
 let guardados = 0;
 let sinCodigo = 0;
 
-for (let pagina = 1; pagina <= paginas; pagina++) {
+for (let pagina = DESDE; pagina <= paginas; pagina++) {
   const datos = pagina === 1 ? primera : await traerPagina(pagina);
   const productos = datos.products ?? [];
 
