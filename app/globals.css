@@ -71,10 +71,12 @@
      propio grosor. */
   --radius-hairline: 2px;
 
-  /* Alto de la barra inferior, incluido su padding. Las pantallas donde la
-     barra aparece reservan este espacio para que no tape contenido; como la
-     barra es fixed, sin esto el último elemento de cada pantalla queda debajo. */
-  --alto-barra: 84px;
+  /* Espacio que cada pantalla reserva abajo para la barra inferior, que es
+     fixed. Son los 84px de la barra más los 20 que el círculo de escanear
+     sobresale por encima (margin-top -30 contra un padding-top de 10), más
+     unos pocos de aire para su sombra. Sin contar el círculo, un botón
+     anclado al pie queda tapado por él. */
+  --alto-barra: 108px;
 
   /* Sombras. Las cinco primeras son negro azulado (el mismo color de --color-ink
      con alfa) y solo se diferencian en peso y rol: -soft para tarjetas en reposo,

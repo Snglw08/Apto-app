@@ -167,8 +167,13 @@ export default function VinculacionPage() {
       </p>
 
       <div className={styles.codigoFila}>
-        <div className={`${styles.codigoBox} ${styles.codigoBoxEstatico}`}>N</div>
-        <div className={`${styles.codigoBox} ${styles.codigoBoxEstatico}`}>M</div>
+        {/* Prefijo fijo del código, que el usuario no escribe. Va letra por
+            letra y no como "AP" porque cada casilla es una caja del mismo
+            tamaño que las editables. Ojo: escrito así, el prefijo NO es
+            grepeable como cadena — por eso el barrido de datos sensibles
+            tiene un chequeo aparte para estas dos líneas. */}
+        <div className={`${styles.codigoBox} ${styles.codigoBoxEstatico}`}>A</div>
+        <div className={`${styles.codigoBox} ${styles.codigoBoxEstatico}`}>P</div>
         {caracteres.map((valor, indice) => (
           <input
             key={indice}
