@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { IconoCamara, IconoInicio } from "../../../icons";
+import { IconoCamara } from "../../../icons";
 import styles from "../page.module.css";
 
 type Estado = { tipo: "instrucciones" } | { tipo: "subiendo" } | { tipo: "error"; mensaje: string };
@@ -135,9 +135,6 @@ export default function FotoIngredientesPage() {
       <header className={styles.header}>
         <Link href={`/producto/${codigoBarras}`} className={styles.link}>
           ‹ Volver
-        </Link>
-        <Link href="/" className={styles.linkInicio} aria-label="Ir al inicio">
-          <IconoInicio size={18} />
         </Link>
       </header>
 

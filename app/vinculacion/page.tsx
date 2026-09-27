@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useIrAEscanear } from "../escanear/ir-a-escanear";
-import { IconoEnlace, IconoInicio, IconoPersona } from "../icons";
+import { IconoEnlace, IconoPersona } from "../icons";
 import styles from "./vinculacion.module.css";
 
 const STORAGE_KEY = "apto-vinculacion";
@@ -127,11 +127,6 @@ export default function VinculacionPage() {
   if (vinculoActual) {
     return (
       <div className={styles.pagina}>
-        <header className={styles.header}>
-          <Link href="/" className={styles.linkInicio} aria-label="Ir al inicio">
-            <IconoInicio size={18} />
-          </Link>
-        </header>
         <div className={styles.badge} aria-hidden="true">
           <IconoEnlace size={30} />
         </div>
@@ -153,11 +148,6 @@ export default function VinculacionPage() {
 
   return (
     <div className={styles.pagina}>
-      <header className={styles.header}>
-        <Link href="/" className={styles.linkInicio} aria-label="Ir al inicio">
-          <IconoInicio size={18} />
-        </Link>
-      </header>
       <div className={styles.badge} aria-hidden="true">
         <IconoEnlace size={30} />
       </div>

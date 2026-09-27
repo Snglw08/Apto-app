@@ -96,9 +96,6 @@ export default function PerfilPage() {
 
   const encabezado = (
     <header className={styles.encabezado}>
-      <Link href="/" className={styles.botonAtras} aria-label="Volver">
-        ‹
-      </Link>
       <h1 className={styles.tituloPagina}>Mi perfil</h1>
     </header>
   );

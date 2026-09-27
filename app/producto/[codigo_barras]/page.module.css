@@ -43,24 +43,6 @@
   color: var(--color-brand);
 }
 
-.inicioAbajo {
-  display: flex;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.linkInicioGrande {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-button);
-  background: var(--color-bg-card);
-  color: var(--color-brand);
-  box-shadow: var(--shadow-card-soft);
-}
-
 .pagina {
   min-height: 100dvh;
   background: var(--color-bg-app);
@@ -138,19 +120,6 @@
 
 .bannerRecomendado {
   background: var(--color-recomendado);
-}
-
-.bannerHeader {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.bannerEnlace {
-  color: var(--color-on-brand);
-  font-weight: 800;
-  font-size: 14px;
 }
 
 .bannerIcono {

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useIrAEscanear } from "../../escanear/ir-a-escanear";
 import {
   IconoAdvertencia,
   IconoCamara,
@@ -11,7 +10,6 @@ import {
   IconoCheck,
   IconoEnlace,
   IconoInfo,
-  IconoInicio,
   IconoX,
 } from "../../icons";
 import { registrarEscaneo } from "@/lib/historial";
@@ -87,18 +85,39 @@ const CONFIG_VEREDICTO: Record<
   },
 };
 
-function LinkInicio() {
-  return (
-    <Link href="/" className={styles.linkInicio} aria-label="Ir al inicio">
-      <IconoInicio size={18} />
-    </Link>
-  );
+/**
+ * Decodifica las entidades HTML que trae el texto de ingredientes de OFF.
+ *
+ * Los ingredientes los cargan colaboradores desde un formulario web, y una
+ * parte llega con comillas escapadas: medido sobre el catálogo cacheado, 37
+ * productos traen `&quot;` literal. React escapa por defecto —que es lo que lo
+ * protege de HTML inyectado— así que esa cadena se renderiza tal cual y el
+ * usuario lee `&quot;COCA-COLA` en la ficha.
+ *
+ * Se decodifica acá, al mostrar, y no al guardar en off_cache: el caché sigue
+ * siendo un espejo fiel de lo que devolvió OFF, y la normalización es una
+ * decisión de presentación. Es una tabla explícita y no un innerHTML: decodificar
+ * con el DOM abriría la puerta a interpretar etiquetas de un texto que viene de
+ * terceros.
+ */
+const ENTIDADES: Record<string, string> = {
+  "&quot;": '"',
+  "&amp;": "&",
+  "&#039;": "'",
+  "&#39;": "'",
+  "&apos;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&nbsp;": " ",
+};
+
+function decodificarEntidades(texto: string): string {
+  return texto.replace(/&(?:quot|amp|#0?39|apos|lt|gt|nbsp);/g, (e) => ENTIDADES[e] ?? e);
 }
 
 export default function ProductoPage() {
   const params = useParams<{ codigo_barras: string }>();
   const codigoBarras = params.codigo_barras;
-  const irAEscanear = useIrAEscanear();
 
   // Se guarda junto al código que la originó: así "cargando" se deriva en el
   // render en vez de necesitar un setState síncrono al inicio del efecto.
@@ -209,9 +228,6 @@ export default function ProductoPage() {
     return (
       <div className={styles.centrado}>
         <p className={styles.mensaje}>Buscando producto…</p>
-        <Link href="/" className={styles.link}>
-          Volver al inicio
-        </Link>
       </div>
     );
   }
@@ -222,12 +238,6 @@ export default function ProductoPage() {
         <p className={styles.mensaje}>
           Hubo un problema buscando el producto. Intenta de nuevo.
         </p>
-        <Link href="/escanear" onClick={irAEscanear} className={styles.link}>
-          ‹ Escanear
-        </Link>
-        <Link href="/" className={styles.link}>
-          Volver al inicio
-        </Link>
       </div>
     );
   }
@@ -235,12 +245,6 @@ export default function ProductoPage() {
   if (estado.tipo === "no-encontrado") {
     return (
       <div className={styles.noEncontrado}>
-        <header className={styles.header}>
-          <Link href="/escanear" onClick={irAEscanear} className={styles.link}>
-            ‹ Escanear
-          </Link>
-          <LinkInicio />
-        </header>
 
         <div className={styles.noEncontradoContenido}>
           <div className={styles.badge} aria-hidden="true">
@@ -281,12 +285,6 @@ export default function ProductoPage() {
   if (veredicto?.estado === "incompleto") {
     return (
       <div className={styles.noEncontrado}>
-        <header className={styles.header}>
-          <Link href="/escanear" onClick={irAEscanear} className={styles.link}>
-            ‹ Escanear
-          </Link>
-          <LinkInicio />
-        </header>
 
         <div className={styles.noEncontradoContenido}>
           <div className={styles.badge} aria-hidden="true">
@@ -323,13 +321,8 @@ export default function ProductoPage() {
 
   return (
     <div className={styles.pagina}>
-      {config && veredicto ? (
+      {config && veredicto && (
         <div className={`${styles.banner} ${config.claseBanner}`}>
-          <div className={styles.bannerHeader}>
-            <Link href="/escanear" onClick={irAEscanear} className={styles.bannerEnlace}>
-              ‹ Escanear
-            </Link>
-          </div>
           <div className={styles.bannerIcono} aria-hidden="true">
             {config.icono}
           </div>
@@ -352,13 +345,6 @@ export default function ProductoPage() {
             ))}
           </div>
         </div>
-      ) : (
-        <header className={styles.header}>
-          <Link href="/escanear" onClick={irAEscanear} className={styles.link}>
-            ‹ Escanear
-          </Link>
-          <LinkInicio />
-        </header>
       )}
 
       <div className={styles.tarjeta}>
@@ -418,7 +404,7 @@ export default function ProductoPage() {
         {producto.ingredientes && (
           <div>
             <p className={styles.eyebrow}>Ingredientes</p>
-            <p className={styles.ingredientes}>{producto.ingredientes}</p>
+            <p className={styles.ingredientes}>{decodificarEntidades(producto.ingredientes)}</p>
           </div>
         )}
 
@@ -438,13 +424,6 @@ export default function ProductoPage() {
         )}
       </div>
 
-      {config && veredicto && (
-        <div className={styles.inicioAbajo}>
-          <Link href="/" className={styles.linkInicioGrande} aria-label="Ir al inicio">
-            <IconoInicio size={36} />
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
