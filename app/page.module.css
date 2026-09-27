@@ -70,6 +70,7 @@
   border-radius: var(--radius-card);
   padding: 40px 24px 32px;
   min-height: 330px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,29 +78,32 @@
   justify-content: center;
   gap: 10px;
   box-shadow: var(--shadow-brand);
-  margin-bottom: 14px;
 }
 
-.iconoEscanearGrande {
-  width: 92px;
-  height: 92px;
-  border-radius: var(--radius-card);
-  background: var(--color-bg-card);
+.accionEscanear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* El símbolo, protagonista. Círculo porque --radius-button es píldora y el
+   elemento es cuadrado: el radio se recorta al alto. */
+.simboloEscanear {
+  width: 124px;
+  height: 124px;
+  border-radius: var(--radius-button);
+  background: var(--color-accent);
+  color: var(--color-ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 6px;
+  box-shadow: var(--shadow-accent);
 }
 
-.imgEscanearGrande {
-  width: 68px;
-  height: 68px;
-  object-fit: contain;
-}
-
-.tituloEscanear {
+.etiquetaEscanear {
   font-weight: 800;
-  font-size: 28px;
+  font-size: 27px;
   line-height: 1.1;
   color: var(--color-on-brand);
 }
@@ -109,19 +113,6 @@
   font-size: 14.5px;
   color: rgba(255, 255, 255, 0.8);
   max-width: 240px;
-}
-
-.botonCamara {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 15px 26px;
-  border-radius: var(--radius-card);
-  background: var(--color-accent);
-  color: var(--color-ink);
-  font-weight: 800;
-  font-size: 15px;
 }
 
 .tarjetaConectado,
@@ -223,7 +214,7 @@
 .botonConectar {
   flex-shrink: 0;
   padding: 10px 16px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 800;

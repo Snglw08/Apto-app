@@ -62,6 +62,11 @@
   /* Píldora: un radio mayor que la mitad del alto se recorta al alto, así que
      999px es "completamente redondeado" sin depender del tamaño del elemento. */
   --radius-pill: 999px;
+  /* Forma de TODOS los botones y controles táctiles, sean texto o icono. Es un
+     alias semántico de --radius-pill a propósito: si mañana los botones tienen
+     que ser menos redondos, se cambia acá sin tocar barras de progreso ni chips,
+     que también son píldoras pero por otro motivo. */
+  --radius-button: var(--radius-pill);
   /* Para elementos de 2px de alto (la línea del escáner), donde el radio es el
      propio grosor. */
   --radius-hairline: 2px;

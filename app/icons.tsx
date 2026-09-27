@@ -19,6 +19,29 @@ const BASE = {
   "aria-hidden": true,
 };
 
+/**
+ * Escaneo de código de barras: marco de esquinas con las barras adentro.
+ * Distinto de IconoCamara a propósito — la cámara es el dispositivo, esto es
+ * la acción. En la pantalla de inicio el usuario no quiere "abrir la cámara",
+ * quiere escanear un producto.
+ */
+export function IconoEscanear({ className, size = 24 }: IconoProps) {
+  return (
+    <svg {...BASE} width={size} height={size} className={className}>
+      {/* Las cuatro esquinas del visor */}
+      <path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4h2" />
+      <path d="M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2" />
+      <path d="M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2" />
+      <path d="M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2" />
+      {/* Las barras del código */}
+      <path d="M8 8.75v6.5" />
+      <path d="M11 8.75v6.5" />
+      <path d="M13.5 8.75v6.5" />
+      <path d="M16 8.75v6.5" />
+    </svg>
+  );
+}
+
 /** Avatar genérico (paciente, nutricionista o perfil sin foto). */
 export function IconoPersona({ className, size = 24 }: IconoProps) {
   return (

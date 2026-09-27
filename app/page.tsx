@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useIrAEscanear } from "./escanear/ir-a-escanear";
-import { IconoCamara, IconoEnlace, IconoPersona } from "./icons";
+import { IconoEnlace, IconoEscanear, IconoPersona } from "./icons";
 import styles from "./page.module.css";
 
 const STORAGE_KEY = "apto-vinculacion";
@@ -67,21 +67,6 @@ export default function HomePage() {
       <h1 className={styles.saludo}>{primerNombre ? `Hola, ${primerNombre}` : "Hola"} 👋</h1>
       <p className={styles.subtitulo}>¿Listo para revisar un producto?</p>
 
-      <div className={styles.tarjetaEscanear}>
-        <div className={styles.iconoEscanearGrande} aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element -- images.unoptimized:true (next.config.ts) hace que next/image no aporte nada acá */}
-          <img src="/logo.png" alt="" className={styles.imgEscanearGrande} />
-        </div>
-        <h2 className={styles.tituloEscanear}>Escanear producto</h2>
-        <p className={styles.subtituloEscanear}>
-          Apunta al código de barras para comprobar si es compatible con tu plan
-        </p>
-        <Link href="/escanear" className={styles.botonCamara} onClick={irAEscanear}>
-          <IconoCamara size={18} />
-          Abrir cámara
-        </Link>
-      </div>
-
       {vinculo === null && (
         <Link href="/vinculacion" className={styles.tarjetaSinVincular}>
           <div className={styles.iconoVinculo} aria-hidden="true">
@@ -115,6 +100,22 @@ export default function HomePage() {
           </span>
         </Link>
       )}
+
+      {/* El símbolo ES el botón: un solo objetivo táctil grande, con la etiqueta
+          debajo. Antes el icono aparecía dos veces —el logo grande arriba y otro
+          chico dentro de un botón ámbar— y ninguno de los dos era protagonista.
+          La marca ya está en la cabecera, así que acá el logo no aportaba. */}
+      <div className={styles.tarjetaEscanear}>
+        <Link href="/escanear" className={styles.accionEscanear} onClick={irAEscanear}>
+          <span className={styles.simboloEscanear} aria-hidden="true">
+            <IconoEscanear size={56} />
+          </span>
+          <span className={styles.etiquetaEscanear}>Escanear</span>
+        </Link>
+        <p className={styles.subtituloEscanear}>
+          Apunta al código de barras para comprobar si es compatible con tu plan
+        </p>
+      </div>
 
       <Link href="/nutricionista" className={styles.enlaceNutricionista}>
         ¿Eres nutricionista? Ingresa aquí

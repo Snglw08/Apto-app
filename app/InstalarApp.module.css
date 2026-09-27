@@ -62,7 +62,7 @@
   flex-shrink: 0;
   padding: 10px 16px;
   border: none;
-  border-radius: var(--radius-box);
+  border-radius: var(--radius-button);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 800;

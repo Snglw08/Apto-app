@@ -35,7 +35,7 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--radius-box);
+  border-radius: var(--radius-button);
   background: var(--color-bg-card);
   color: var(--color-brand);
 }
@@ -52,7 +52,7 @@
   justify-content: center;
   width: 60px;
   height: 60px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-bg-card);
   color: var(--color-brand);
   box-shadow: var(--shadow-card-soft);
@@ -301,7 +301,7 @@
   margin-top: 8px;
   padding: 16px;
   border: none;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 800;
@@ -353,7 +353,7 @@
   max-width: 320px;
   padding: 16px;
   border: none;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-bg-card);
   color: var(--color-brand);
   font-weight: 700;
@@ -419,7 +419,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 22px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 800;
@@ -459,7 +459,7 @@
 .avisoReglasBoton {
   margin-top: 2px;
   padding: 11px 22px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 800;
