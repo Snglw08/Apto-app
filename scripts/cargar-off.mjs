@@ -1,7 +1,7 @@
 /**
  * Precarga `off_cache` con el catálogo de Open Food Facts de un país.
  *
- *   node scripts/cargar-off.mjs [--pais=chile] [--solo-completos] [--limite=N] [--desde=N]
+ *   node scripts/cargar-off.mjs [--pais=chile] [--solo-completos] [--limite=N]
  *
  * Por qué existe: el caché se llena solo al escanear (ver la ruta
  * app/api/producto/[codigo_barras]/route.ts), pero eso significa que el PRIMER
@@ -44,9 +44,6 @@ const args = Object.fromEntries(
 const PAIS = args.pais ?? "chile";
 const SOLO_COMPLETOS = Boolean(args["solo-completos"]);
 const LIMITE = args.limite ? Number(args.limite) : Infinity;
-// OFF corta las búsquedas masivas anónimas con un 401 (se vio a la página 11).
-// --desde permite retomar donde quedó sin volver a pedir lo ya cargado.
-const DESDE = args.desde ? Number(args.desde) : 1;
 
 // --- credenciales, desde .dev.vars ------------------------------------------
 function leerDevVars() {
@@ -213,7 +210,8 @@ for (const tramo of TRAMOS) {
     }
 
     process.stdout.write(
-      `  tramo ${tramo}: página ${pagina}/${paginas} — ${guardados + pendientes.length} productos   `,
+      `
+  tramo ${tramo}: página ${pagina}/${paginas} — ${guardados + pendientes.length} productos   `,
     );
     if (guardados + pendientes.length >= LIMITE) break;
     if (pagina < paginas) await dormir(PAUSA_MS);
@@ -223,7 +221,8 @@ for (const tramo of TRAMOS) {
     await guardar(pendientes);
     guardados += pendientes.length;
   }
-  console.log(`  tramo ${tramo}: ${paginas} páginas, ${guardados} acumulados${corto ? " (cortado)" : ""}        `);
+  console.log(`
+  tramo ${tramo}: ${paginas} páginas, ${guardados} acumulados${corto ? " (cortado)" : ""}        `);
 
   if (guardados >= LIMITE) break;
   await dormir(PAUSA_MS);

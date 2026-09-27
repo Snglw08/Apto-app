@@ -39,6 +39,52 @@ function bufferABase64(buffer: ArrayBuffer): string {
   return btoa(binario);
 }
 
+/** Cuántos reintentos ante saturación, sin contar el primer intento. */
+const REINTENTOS = 2;
+/** Espera del primer reintento; el segundo duplica. */
+const ESPERA_BASE_MS = 900;
+
+/**
+ * Llama a Gemini reintentando si responde 503.
+ *
+ * El 503 de Gemini dice literalmente "This model is currently experiencing high
+ * demand. Spikes in demand are usually temporary. Please try again later." —
+ * o sea, el propio servicio avisa que es transitorio. Sin reintento, el usuario
+ * sacaba la foto, esperaba, y recibía un error por algo que se resolvía solo en
+ * un segundo. Medido: el mismo modelo alternaba 503 y 200 minuto a minuto.
+ *
+ * Solo se reintenta el 503. Un 400 (imagen inválida) o un 403 (key mala) no
+ * mejoran esperando, y reintentarlos solo haría esperar al usuario de gusto.
+ *
+ * El 429 tampoco se reintenta acá: tiene su propio tratamiento más abajo,
+ * porque en el free tier de Gemini suele ser la cuota diaria agotada y esa no
+ * se recupera hasta el día siguiente.
+ */
+async function pedirAGemini(cuerpo: string, apiKey: string): Promise<Response> {
+  let respuesta: Response | undefined;
+
+  for (let intento = 0; intento <= REINTENTOS; intento++) {
+    if (intento > 0) {
+      await new Promise((r) => setTimeout(r, ESPERA_BASE_MS * 2 ** (intento - 1)));
+    }
+
+    respuesta = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: cuerpo,
+    });
+
+    if (respuesta.status !== 503) return respuesta;
+  }
+
+  // Agotados los reintentos, se devuelve el último 503 para que el llamador
+  // arme el mensaje.
+  return respuesta as Response;
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ codigo_barras: string }> },
@@ -68,30 +114,25 @@ export async function POST(
   const { env } = getCloudflareContext();
   const base64 = bufferABase64(await foto.arrayBuffer());
 
+  const cuerpo = JSON.stringify({
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { text: PROMPT },
+          { inline_data: { mime_type: foto.type || "image/jpeg", data: base64 } },
+        ],
+      },
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
+    },
+  });
+
   let geminiRes: Response;
   try {
-    geminiRes = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: PROMPT },
-              { inline_data: { mime_type: foto.type || "image/jpeg", data: base64 } },
-            ],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: RESPONSE_SCHEMA,
-        },
-      }),
-    });
+    geminiRes = await pedirAGemini(cuerpo, env.GEMINI_API_KEY);
   } catch {
     return NextResponse.json(
       { error: "No pudimos conectar con el servicio de lectura. Revisa tu conexión e intenta de nuevo." },
@@ -106,6 +147,19 @@ export async function POST(
       // abajo — recién al día siguiente, así que necesita su propio mensaje.
       return NextResponse.json(
         { error: "Llegamos al límite diario de lecturas por hoy. Vuelve a intentar mañana." },
+        { status: 503 },
+      );
+    }
+    if (geminiRes.status === 503) {
+      // Saturación del modelo, ya reintentada sin éxito (ver pedirAGemini).
+      // Merece su propio mensaje: no es que algo esté roto ni que la foto esté
+      // mal, es que hay que esperar. Decírselo al usuario evita que saque la
+      // foto cinco veces pensando que el problema es su encuadre.
+      return NextResponse.json(
+        {
+          error:
+            "El servicio de lectura está saturado en este momento. No es tu foto: espera un minuto y vuelve a intentar.",
+        },
         { status: 503 },
       );
     }
