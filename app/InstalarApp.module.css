@@ -10,7 +10,7 @@
   padding: 14px 16px;
   border-radius: var(--radius-card);
   background: var(--color-bg-card);
-  box-shadow: 0 12px 32px rgba(16, 22, 35, 0.18);
+  box-shadow: var(--shadow-overlay);
   animation: aparecer 0.25s ease-out;
 }
 

@@ -118,8 +118,30 @@ En esos casos el estado es **"datos incompletos"**, y la UI ofrece el flujo de f
 Mismo criterio para los productos cargados por OCR: un dato sin verificar **puede
 vetar** (ante la duda, avisar) pero **nunca recomienda en verde**.
 
-→ [`app/producto/[codigo_barras]/page.tsx`](app/producto/[codigo_barras]/page.tsx),
-función `calcularVeredicto`.
+Eso cubre la mitad del problema: el dato del producto. La otra mitad son las reglas
+del paciente, y ahí el modo de fallar es menos obvio. Si la consulta de reglas falla
+—red caída, endpoint con error— es tentador tratar la respuesta como "sin reglas" y
+seguir. Pero un producto evaluado contra cero reglas sale **neutro**, con el texto
+"con moderación, sin problema": un paciente intolerante a la lactosa escaneando un
+lácteo recibiría vía libre porque se cayó un servicio. Por eso "este paciente no
+tiene reglas" y "no pudimos averiguar qué reglas tiene" son estados **distintos** en
+el código, imposibles de confundir por construcción:
+
+- El endpoint (`app/api/pacientes/[id]/reglas/route.ts`) responde 400 a un id mal
+  formado, 404 si el paciente no existe, 500 si la consulta falló, y 200 solo cuando
+  sabe la respuesta. Una lista vacía en un 200 sí significa "sin reglas".
+- El cliente modela las reglas como `cargando | listas | error`, no como una lista
+  que puede estar vacía por dos motivos opuestos.
+- Con las reglas en `error` **no se emite ningún veredicto**, ni siquiera neutro: se
+  muestra la ficha del producto y un aviso de que no se pudo revisar, con reintento.
+
+La misma distinción aplica en `/perfil` (que si no diría "tu plan está en camino")
+y en el panel del nutricionista (que mostraría un plan vacío y lo invitaría a
+cargar reglas duplicadas).
+
+→ [`lib/veredicto.ts`](lib/veredicto.ts), función `calcularVeredicto`, con sus tests
+en [`lib/veredicto.test.ts`](lib/veredicto.test.ts). Vive separada de la pantalla que
+la usa justamente para poder testearla sin montar React ni red.
 
 ### 2. Dos tablas de productos que no se pueden fusionar
 
@@ -168,9 +190,24 @@ La validación pasa entonces por un Route Handler con `service_role` que solo pe
 un lookup exacto por `codigo_invitacion` y devuelve el mínimo de datos. El límite lo
 impone la forma del endpoint, no la policy.
 
-Ese endpoint tiene además un rate limiter de Cloudflare (10 req/min): el código es
-de 4 caracteres, unas 924.000 combinaciones. No es un límite duro, pero corta las
-ráfagas automatizadas.
+Ese endpoint tiene además un rate limiter de Cloudflare, configurado en 10 req/min por
+IP: el código es de 4 caracteres de un alfabeto de 31, o sea 31⁴ = 923.521
+combinaciones — quince minutos de trabajo para un script sin nada que lo frene.
+
+**Cuánto frena realmente, medido y no asumido.** La API de rate limiting de Workers
+cuenta por centro de datos y es eventualmente consistente, así que el límite no se
+comporta igual en desarrollo que en producción:
+
+| Entorno | 60 requests seguidos |
+|---|---|
+| `next dev` y `npm run preview` | corte exacto: pasan 10, el resto 429 |
+| Producción (workers.dev) | **8 bloqueados de 60** (13%), en ráfagas irregulares |
+
+O sea que en producción no es una compuerta que se cierra, sino una fricción: sube el
+costo del ataque de ~15 minutos a varios días desde una sola IP, pero no lo vuelve
+imposible. Para un proyecto de demostración con pacientes ficticios alcanza. Para datos
+reales no: ahí el código de invitación tendría que ser más largo, de un solo uso, o con
+vencimiento — las tres cosas son baratas y ninguna está implementada acá.
 
 → [`supabase/migrations/20260725000001_codigo_invitacion.sql`](supabase/migrations/20260725000001_codigo_invitacion.sql),
 [`app/api/vinculacion/route.ts`](app/api/vinculacion/route.ts)
@@ -196,6 +233,12 @@ terceros.
 El límite de bundle comprimido del free tier es 3 MiB, y eso condiciona el código.
 El OCR, por ejemplo, le pega a la REST API de Gemini con `fetch` directo en lugar de
 usar el SDK oficial: el resultado es el mismo y el bundle no crece.
+
+Medido con `npx wrangler deploy --dry-run` (Next 16.2.10, `@opennextjs/cloudflare`
+1.20.1, wrangler 4.112.0): **6710 KiB sin comprimir, 1362 KiB gzip**. O sea que el
+presupuesto está usado al 44%, con margen para crecer al doble antes de tocar el
+techo. Conviene volver a medirlo al agregar cualquier dependencia de servidor — es un
+comando, y es la diferencia entre enterarse ahora o en el deploy.
 
 Otras dos consecuencias del runtime:
 
@@ -267,7 +310,10 @@ app/
 ├─ globals.css                   Todos los tokens de diseño
 └─ manifest.ts                   Manifest de la PWA
 
-lib/supabase/                    Clientes: browser, server (anon) y server (service_role)
+lib/
+├─ veredicto.ts                  El semáforo: lógica pura, testeable sin React
+├─ veredicto.test.ts             19 casos, uno por regla del semáforo
+└─ supabase/                     Clientes: browser, server (anon) y server (service_role)
 supabase/
 ├─ migrations/                   Esquema, versionado y en orden
 └─ seed.sql                      Datos demo — y el backup del free tier
@@ -300,14 +346,28 @@ Para desplegar, además:
 
 ```bash
 npx wrangler kv namespace create NEXT_INC_CACHE_KV   # pegar el id en wrangler.jsonc
+npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put GEMINI_API_KEY
 npm run deploy
 ```
 
-Los valores de Supabase van en `vars` de `wrangler.jsonc` y no como secretos: la
-publishable key está diseñada para viajar al navegador y la seguridad la da RLS. La
-única credencial secreta del proyecto es `GEMINI_API_KEY`, que solo se lee desde
-Route Handlers y nunca entra al bundle del cliente.
+Las claves de Supabase del proyecto son dos y no se tratan igual, porque no son lo
+mismo:
+
+- La **publishable/anon key** va en `vars` de `wrangler.jsonc`, en claro. Está diseñada
+  para viajar al navegador y la seguridad no la da el secreto de la clave, la da Row
+  Level Security.
+- La **service_role key** es secreta de verdad, porque **bypasea RLS**: con ella una
+  consulta ve todas las filas de todas las tablas. Va por `wrangler secret put`, nunca
+  en `vars` ni en el repo. La usan las rutas que necesitan hacer algo que RLS no puede
+  expresar: validar un código de invitación con un lookup exacto sin exponer un listado
+  de pacientes (ver la decisión 4), escribir en `off_cache`, guardar lo que devuelve el
+  OCR, y crear o borrar un paciente —que son dos tablas en una operación—.
+
+O sea que el proyecto tiene **dos** credenciales secretas, `SUPABASE_SERVICE_ROLE_KEY` y
+`GEMINI_API_KEY`. Las dos se leen únicamente desde Route Handlers, vía
+`getCloudflareContext().env`, y ninguna entra al bundle del cliente. Si falta cualquiera
+de las dos en producción, las rutas que la usan responden 500.
 
 ## Comandos
 
@@ -332,8 +392,12 @@ Es un MVP, y estas son las costuras que se ven:
   demo, insuficiente para varios dispositivos por paciente.
 - **Un paciente, un nutricionista.** La tabla `asignaciones` tiene `paciente_id` como
   `unique`.
-- **Sin tests.** La función que más los pide es `calcularVeredicto`: es lógica pura,
-  con reglas claras y consecuencias reales si falla.
+- **Los tests cubren el semáforo y nada más.** `lib/veredicto.ts` tiene 19 casos, uno
+  por regla: los cuatro cortes de calidad de OFF, que vetado gane sobre recomendado,
+  que un dato por OCR pueda vetar pero nunca recomendar, y que `sal` matchee `salvado`
+  (fijada como está, para que normalizarla sea un cambio deliberado). Lo que no está
+  cubierto es todo lo demás: componentes, rutas y red. La elección es a propósito —esa
+  función es la única donde un bug tiene consecuencias sobre una persona.
 - **El binding de KV está declarado pero el cache incremental no está habilitado** en
   `open-next.config.ts`. Funciona igual, pero es una inconsistencia a resolver.
 - **El OCR devuelve texto sin verificar.** Por eso nunca habilita un verde, pero

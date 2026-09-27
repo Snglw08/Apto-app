@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { IconoCheck, IconoEnlace, IconoNotas, IconoPersona, IconoX } from "../icons";
+import {
+  IconoAdvertencia,
+  IconoCheck,
+  IconoEnlace,
+  IconoNotas,
+  IconoPersona,
+  IconoX,
+} from "../icons";
 import styles from "./page.module.css";
 
 const STORAGE_KEY = "apto-vinculacion";
@@ -16,11 +23,48 @@ type Vinculo = {
 
 type Regla = { tipo: "vetado" | "recomendado"; ingrediente_clave: string };
 
+// Mismo criterio que en app/producto/[codigo_barras]: una lista vacía y un
+// fallo de la consulta no pueden compartir representación. Acá el síntoma era
+// más suave que en el semáforo —decía "tu plan está en camino" cuando en
+// realidad no había podido preguntar— pero es la misma mentira al paciente.
+type EstadoReglas =
+  | { tipo: "cargando" }
+  | { tipo: "listas"; reglas: Regla[] }
+  | { tipo: "error" };
+
 export default function PerfilPage() {
   const router = useRouter();
   // undefined = todavía no se revisó localStorage; null = no vinculado.
   const [vinculo, setVinculo] = useState<Vinculo | null | undefined>(undefined);
-  const [reglas, setReglas] = useState<Regla[] | null>(null);
+  const [estadoReglas, setEstadoReglas] = useState<EstadoReglas>({ tipo: "cargando" });
+  const peticionReglas = useRef(0);
+
+  const cargarReglas = useCallback(async (pacienteId: string) => {
+    const idPeticion = ++peticionReglas.current;
+    setEstadoReglas({ tipo: "cargando" });
+
+    try {
+      const res = await fetch(`/api/pacientes/${encodeURIComponent(pacienteId)}/reglas`);
+      if (idPeticion !== peticionReglas.current) return;
+
+      if (!res.ok) {
+        setEstadoReglas({ tipo: "error" });
+        return;
+      }
+
+      const data = (await res.json()) as { reglas?: unknown };
+      if (idPeticion !== peticionReglas.current) return;
+
+      if (!Array.isArray(data.reglas)) {
+        setEstadoReglas({ tipo: "error" });
+        return;
+      }
+
+      setEstadoReglas({ tipo: "listas", reglas: data.reglas as Regla[] });
+    } catch {
+      if (idPeticion === peticionReglas.current) setEstadoReglas({ tipo: "error" });
+    }
+  }, []);
 
   useEffect(() => {
     // localStorage no existe durante el render en el servidor; no hay forma
@@ -41,16 +85,9 @@ export default function PerfilPage() {
     }
 
     setVinculo(parseado);
-
     // Misma ruta pública que usa el semáforo (app/producto/[codigo_barras]).
-    fetch(`/api/pacientes/${encodeURIComponent(parseado.pacienteId)}/reglas`)
-      .then((res): Promise<unknown> => (res.ok ? res.json() : Promise.resolve({ reglas: [] })))
-      .then((data) => {
-        const { reglas: recibidas } = data as { reglas: Regla[] };
-        setReglas(recibidas ?? []);
-      })
-      .catch(() => setReglas([]));
-  }, []);
+    void cargarReglas(parseado.pacienteId);
+  }, [cargarReglas]);
 
   function desvincular() {
     localStorage.removeItem(STORAGE_KEY);
@@ -102,7 +139,7 @@ export default function PerfilPage() {
     );
   }
 
-  if (vinculo === undefined || reglas === null) {
+  if (vinculo === undefined || estadoReglas.tipo === "cargando") {
     return (
       <div className={styles.pagina}>
         {encabezado}
@@ -111,26 +148,70 @@ export default function PerfilPage() {
     );
   }
 
-  const vetados = reglas.filter((r) => r.tipo === "vetado");
-  const recomendados = reglas.filter((r) => r.tipo === "recomendado");
   const inicial = vinculo.pacienteNombre.charAt(0).toUpperCase();
   const nombreNutri = vinculo.nutricionistaNombre ?? "tu nutricionista";
+
+  const tarjetaIdentidad = (
+    <div className={styles.tarjetaIdentidad}>
+      <div className={styles.avatarPaciente} aria-hidden="true">
+        {inicial}
+      </div>
+      <div>
+        <p className={styles.nombrePacienteDestacado}>{vinculo.pacienteNombre}</p>
+        <p className={styles.definidoPor}>
+          Tu plan lo definió <strong>{nombreNutri}</strong>
+        </p>
+      </div>
+    </div>
+  );
+
+  const botonDesvincular = (
+    <button type="button" className={styles.enlaceDesvincular} onClick={desvincular}>
+      Desvincular a mi nutricionista
+    </button>
+  );
+
+  // La consulta falló: no se muestran listas vacías, porque "no tienes reglas"
+  // y "no pudimos preguntar" son mensajes distintos para el paciente.
+  if (estadoReglas.tipo === "error") {
+    return (
+      <div className={styles.pagina}>
+        {encabezado}
+        {tarjetaIdentidad}
+
+        <div className={styles.estadoVacio}>
+          <div className={styles.badgeError} aria-hidden="true">
+            <IconoAdvertencia size={26} />
+          </div>
+          <h2 className={styles.tituloVacio}>No pudimos cargar tu plan</h2>
+          <p className={styles.textoVacio}>
+            Esto no significa que no tengas ingredientes definidos: no logramos
+            consultarlos. Vuelve a intentar en un momento; si el problema sigue, tu
+            vínculo con tu nutricionista puede haber cambiado.
+          </p>
+          <button
+            type="button"
+            className={styles.botonPrimario}
+            onClick={() => void cargarReglas(vinculo.pacienteId)}
+          >
+            Reintentar
+          </button>
+        </div>
+
+        {botonDesvincular}
+      </div>
+    );
+  }
+
+  const { reglas } = estadoReglas;
+  const vetados = reglas.filter((r) => r.tipo === "vetado");
+  const recomendados = reglas.filter((r) => r.tipo === "recomendado");
 
   return (
     <div className={styles.pagina}>
       {encabezado}
 
-      <div className={styles.tarjetaIdentidad}>
-        <div className={styles.avatarPaciente} aria-hidden="true">
-          {inicial}
-        </div>
-        <div>
-          <p className={styles.nombrePacienteVioleta}>{vinculo.pacienteNombre}</p>
-          <p className={styles.definidoPor}>
-            Tu plan lo definió <strong>{nombreNutri}</strong>
-          </p>
-        </div>
-      </div>
+      {tarjetaIdentidad}
 
       {reglas.length === 0 ? (
         <div className={styles.estadoVacio}>
@@ -140,7 +221,7 @@ export default function PerfilPage() {
           <h2 className={styles.tituloVacio}>Tu plan está en camino</h2>
           <p className={styles.textoVacio}>
             {nombreNutri} aún no ha definido tus ingredientes a evitar y preferir. Te
-            avisaremos apenas estén listos 💜
+            avisaremos apenas estén listos.
           </p>
           <div className={styles.contadoresVacio}>
             <span className={styles.pillVacioEvitar}>Evitar · 0</span>
@@ -199,9 +280,7 @@ export default function PerfilPage() {
         </>
       )}
 
-      <button type="button" className={styles.enlaceDesvincular} onClick={desvincular}>
-        Desvincular a mi nutricionista
-      </button>
+      {botonDesvincular}
     </div>
   );
 }

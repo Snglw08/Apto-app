@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useIrAEscanear } from "../../escanear/ir-a-escanear";
@@ -14,23 +14,14 @@ import {
   IconoInicio,
   IconoX,
 } from "../../icons";
+import {
+  calcularVeredicto,
+  type Origen,
+  type Producto,
+  type Regla,
+  type Veredicto,
+} from "@/lib/veredicto";
 import styles from "./page.module.css";
-
-type Origen = "productos_propios" | "off_cache";
-
-type Producto = {
-  codigo_barras: string;
-  nombre: string | null;
-  marca: string | null;
-  ingredientes: string | null;
-  fuente?: "off" | "ocr" | "manual";
-  sellos?: string[];
-  states_tags?: string[];
-  last_modified_t?: number | null;
-  data_quality_errors_tags?: string[];
-};
-
-type Regla = { tipo: "vetado" | "recomendado"; ingrediente_clave: string };
 
 type Vinculo = {
   pacienteId: string;
@@ -45,83 +36,18 @@ type EstadoResuelto =
 
 type Estado = { tipo: "cargando" } | EstadoResuelto;
 
-type Veredicto =
-  | { estado: "vetado" | "neutro" | "recomendado"; motivo: string }
-  | { estado: "incompleto" };
+// "listas" con una lista vacía significa "este paciente no tiene reglas".
+// "error" significa "no sabemos qué reglas tiene". Son dos cosas distintas y
+// por eso no pueden compartir representación: cuando un fallo de red se
+// guardaba como lista vacía, el semáforo calculaba un veredicto con cero
+// reglas y mostraba NEUTRO ("con moderación, sin problema") para un producto
+// que podía estar vetado. Ver la regla del semáforo en el README.
+type EstadoReglas =
+  | { tipo: "cargando" }
+  | { tipo: "listas"; reglas: Regla[] }
+  | { tipo: "error" };
 
 const STORAGE_KEY = "apto-vinculacion";
-const DOS_ANIOS_EN_SEGUNDOS = 2 * 365.25 * 24 * 3600;
-
-// Regla central del proyecto (ver "El semáforo" en el README): el semáforo
-// nunca muestra verde si el dato viene de OFF y está incompleto,
-// desactualizado o con errores de calidad. Ante la duda,
-// jamás declarar un producto apto. Mismo criterio para fuente 'ocr' (foto sin
-// verificar): puede vetar por seguridad, pero nunca recomienda en verde.
-function calcularVeredicto(producto: Producto, origen: Origen, reglas: Regla[]): Veredicto {
-  if (origen === "off_cache") {
-    const statesTags = producto.states_tags ?? [];
-    const dataQualityErrors = producto.data_quality_errors_tags ?? [];
-    const lastModified = producto.last_modified_t ?? null;
-    const desactualizado =
-      !lastModified || Date.now() / 1000 - lastModified > DOS_ANIOS_EN_SEGUNDOS;
-
-    if (
-      !statesTags.includes("en:ingredients-completed") ||
-      desactualizado ||
-      dataQualityErrors.length > 0
-    ) {
-      return { estado: "incompleto" };
-    }
-  }
-
-  const ingredientesTexto = (producto.ingredientes ?? "").toLowerCase();
-  if (!ingredientesTexto.trim()) {
-    return { estado: "incompleto" };
-  }
-
-  // OCR sin verificar: se permite VETADO (por seguridad, ante la duda se
-  // avisa igual), pero jamás RECOMENDADO — un dato sin verificar nunca
-  // habilita el "verde". Ver nota en el header de esta función.
-  const sinVerificar = producto.fuente === "ocr";
-
-  const vetados = reglas.filter(
-    (r) => r.tipo === "vetado" && ingredientesTexto.includes(r.ingrediente_clave.toLowerCase()),
-  );
-  if (vetados.length > 0) {
-    return {
-      estado: "vetado",
-      motivo: `Tu nutricionista no recomienda este producto por contener ${vetados
-        .map((r) => r.ingrediente_clave)
-        .join(", ")}.`,
-    };
-  }
-
-  const recomendados = reglas.filter(
-    (r) =>
-      r.tipo === "recomendado" && ingredientesTexto.includes(r.ingrediente_clave.toLowerCase()),
-  );
-  if (recomendados.length > 0) {
-    if (sinVerificar) {
-      return {
-        estado: "neutro",
-        motivo: `Contiene ${recomendados
-          .map((r) => r.ingrediente_clave)
-          .join(", ")}, que tu nutricionista recomienda — pero este producto lo agregaste tú por foto y todavía no está verificado, así que no lo marcamos como recomendado.`,
-      };
-    }
-    return {
-      estado: "recomendado",
-      motivo: `Contiene ${recomendados
-        .map((r) => r.ingrediente_clave)
-        .join(", ")}, que tu nutricionista recomienda para ti.`,
-    };
-  }
-
-  return {
-    estado: "neutro",
-    motivo: "No encontramos restricciones ni recomendaciones para este producto. Con moderación, sin problema.",
-  };
-}
 
 const CONFIG_VEREDICTO: Record<
   "vetado" | "neutro" | "recomendado",
@@ -182,8 +108,42 @@ export default function ProductoPage() {
 
   // undefined = todavía no se revisó localStorage; null = no vinculado.
   const [vinculo, setVinculo] = useState<Vinculo | null | undefined>(undefined);
-  // null = reglas no cargadas todavía (o no aplica); [] es un valor válido y "listo".
-  const [reglas, setReglas] = useState<Regla[] | null>(null);
+  const [estadoReglas, setEstadoReglas] = useState<EstadoReglas>({ tipo: "cargando" });
+
+  // Con el botón de reintentar puede haber más de una petición en vuelo, y la
+  // primera en salir no es necesariamente la primera en volver. Solo la última
+  // pedida tiene derecho a escribir el estado.
+  const peticionReglas = useRef(0);
+
+  const cargarReglas = useCallback(async (pacienteId: string) => {
+    const idPeticion = ++peticionReglas.current;
+    setEstadoReglas({ tipo: "cargando" });
+
+    try {
+      const res = await fetch(`/api/pacientes/${encodeURIComponent(pacienteId)}/reglas`);
+      if (idPeticion !== peticionReglas.current) return;
+
+      if (!res.ok) {
+        setEstadoReglas({ tipo: "error" });
+        return;
+      }
+
+      const data = (await res.json()) as { reglas?: unknown };
+      if (idPeticion !== peticionReglas.current) return;
+
+      // Una respuesta 200 con un cuerpo que no es la lista esperada es un
+      // fallo, no "cero reglas". Caer a [] acá sería reintroducir el mismo bug
+      // por la puerta de atrás.
+      if (!Array.isArray(data.reglas)) {
+        setEstadoReglas({ tipo: "error" });
+        return;
+      }
+
+      setEstadoReglas({ tipo: "listas", reglas: data.reglas as Regla[] });
+    } catch {
+      if (idPeticion === peticionReglas.current) setEstadoReglas({ tipo: "error" });
+    }
+  }, []);
 
   useEffect(() => {
     let activo = true;
@@ -215,7 +175,6 @@ export default function ProductoPage() {
   }, [codigoBarras]);
 
   useEffect(() => {
-    let activo = true;
     // localStorage no existe durante el render en el servidor; no hay forma
     // de derivar esto en el render, tiene que leerse en un efecto.
     const guardado = localStorage.getItem(STORAGE_KEY);
@@ -234,21 +193,8 @@ export default function ProductoPage() {
     }
 
     setVinculo(parseado);
-
-    fetch(`/api/pacientes/${encodeURIComponent(parseado.pacienteId)}/reglas`)
-      .then((res): Promise<unknown> => (res.ok ? res.json() : Promise.resolve({ reglas: [] })))
-      .then((data) => {
-        const { reglas: reglasRecibidas } = data as { reglas: Regla[] };
-        if (activo) setReglas(reglasRecibidas ?? []);
-      })
-      .catch(() => {
-        if (activo) setReglas([]);
-      });
-
-    return () => {
-      activo = false;
-    };
-  }, []);
+    void cargarReglas(parseado.pacienteId);
+  }, [cargarReglas]);
 
   const estado: Estado =
     resultado && resultado.codigoBarras === codigoBarras
@@ -316,12 +262,17 @@ export default function ProductoPage() {
   }
 
   const { producto, origen } = estado;
-  const sellos = producto.sellos ?? [];
 
-  // Recién con vinculo Y reglas resueltos se intenta un veredicto; mientras
-  // tanto (o si no está vinculado) se muestra la ficha simple, sin banner.
+  // Recién con vinculo Y reglas efectivamente cargadas se intenta un veredicto.
+  // Mientras cargan, si no está vinculado, o si la consulta falló, se muestra la
+  // ficha simple sin banner: sin saber las reglas del paciente no se emite
+  // ningún veredicto, ni siquiera "neutro".
   const veredicto: Veredicto | null =
-    vinculo && reglas ? calcularVeredicto(producto, origen, reglas) : null;
+    vinculo && estadoReglas.tipo === "listas"
+      ? calcularVeredicto(producto, origen, estadoReglas.reglas)
+      : null;
+
+  const reglasFallaron = Boolean(vinculo) && estadoReglas.tipo === "error";
 
   if (veredicto?.estado === "incompleto") {
     return (
@@ -346,12 +297,20 @@ export default function ProductoPage() {
             <IconoCamara size={18} />
             Tomar foto de la etiqueta
           </Link>
-          <button type="button" className={styles.botonSecundario}>
-            Buscar por nombre
+          <button type="button" className={styles.botonSecundario} disabled>
+            Buscar por nombre <span className={styles.etiquetaProximamente}>Próximamente</span>
           </button>
         </div>
 
-        <p className={styles.caption}>Producto agregado por ti, sin verificar</p>
+        {/* Este producto SÍ existe en off_cache: lo que falta es calidad de dato
+            (ingredientes incompletos, más de 2 años sin actualizar, o errores que
+            reporta OFF). No se muestra ningún valor de Open Food Facts en esta
+            pantalla —ni nombre ni ingredientes— así que no lleva atribución; si
+            algún día se mostraran, la regla de atribución visible aplica acá
+            también. */}
+        <p className={styles.caption}>
+          Los datos de este producto están incompletos o desactualizados
+        </p>
       </div>
     );
   }
@@ -417,6 +376,29 @@ export default function ProductoPage() {
           </div>
         )}
 
+        {reglasFallaron && (
+          <div className={styles.avisoReglas}>
+            <p className={styles.avisoReglasTitulo}>
+              <IconoAdvertencia size={15} />
+              No pudimos revisar tus reglas
+            </p>
+            <p className={styles.avisoReglasTexto}>
+              No logramos cargar los ingredientes que tu nutricionista definió para ti, así
+              que <strong>no podemos decirte si este producto es apto</strong>. Vuelve a
+              intentar en un momento; si el problema sigue, revisa tu vínculo en tu perfil.
+            </p>
+            <button
+              type="button"
+              className={styles.avisoReglasBoton}
+              onClick={() => {
+                if (vinculo) void cargarReglas(vinculo.pacienteId);
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
         {vinculo === null && (
           <div className={styles.avisoVinculo}>
             <p className={styles.avisoVinculoTexto}>
@@ -426,19 +408,6 @@ export default function ProductoPage() {
               <IconoEnlace size={16} />
               Conectar ahora
             </Link>
-          </div>
-        )}
-
-        {sellos.length > 0 && (
-          <div>
-            <p className={styles.eyebrow}>Sellos</p>
-            <div className={styles.sellosFila}>
-              {sellos.map((sello) => (
-                <span key={sello} className={styles.sello}>
-                  {sello}
-                </span>
-              ))}
-            </div>
           </div>
         )}
 

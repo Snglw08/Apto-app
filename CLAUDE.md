@@ -81,7 +81,8 @@ npm run cf-typegen  # regenera cloudflare-env.d.ts desde wrangler.jsonc + .dev.v
    Un producto con `fuente: 'ocr'` puede **vetar** pero nunca **recomendar**: dato sin
    verificar no habilita el verde. Ante la duda, jamás declarar un producto apto.
 
-   → `app/producto/[codigo_barras]/page.tsx`, función `calcularVeredicto`.
+   → `lib/veredicto.ts`, función `calcularVeredicto`. Tests en `lib/veredicto.test.ts`:
+   si esta regla cambia, esos tests tienen que cambiar a propósito.
 
 ### Datos y licencia ODbL
 

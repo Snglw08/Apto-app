@@ -27,6 +27,9 @@
 
   --color-neutro: #667085;
   --color-neutro-bg: #eef0f3;
+  /* El sólido sobre su propio tinte da 4.36:1 y no llega al 4.5:1 de WCAG AA,
+     igual que pasa con vetado y recomendado. De ahí este -fg más oscuro: 5.31:1. */
+  --color-neutro-fg: #5a6373;
 
   --color-recomendado: #18794e;
   --color-recomendado-bg: #e6f4ec;
@@ -56,9 +59,23 @@
   --radius-box: 8px;
   --radius-card: 10px;
   --radius-badge: 6px;
+  /* Píldora: un radio mayor que la mitad del alto se recorta al alto, así que
+     999px es "completamente redondeado" sin depender del tamaño del elemento. */
+  --radius-pill: 999px;
+  /* Para elementos de 2px de alto (la línea del escáner), donde el radio es el
+     propio grosor. */
+  --radius-hairline: 2px;
 
-  /* Sombras */
+  /* Sombras. Las cinco primeras son negro azulado (el mismo color de --color-ink
+     con alfa) y solo se diferencian en peso y rol: -soft para tarjetas en reposo,
+     -strong para la tarjeta protagonista de la pantalla, -overlay para lo que
+     flota sobre el resto. Las de marca y acento sí usan su propio color. */
   --shadow-card: 0 1px 2px rgba(16, 22, 35, 0.06), 0 1px 3px rgba(16, 22, 35, 0.1);
+  --shadow-card-soft: 0 10px 30px rgba(16, 22, 35, 0.06);
+  --shadow-card-strong: 0 10px 30px rgba(16, 22, 35, 0.08);
+  --shadow-button: 0 6px 16px rgba(16, 22, 35, 0.06);
+  --shadow-button-round: 0 8px 20px rgba(16, 22, 35, 0.1);
+  --shadow-overlay: 0 12px 32px rgba(16, 22, 35, 0.18);
   --shadow-brand: 0 6px 16px rgba(27, 58, 107, 0.25);
   --shadow-scan-pill: 0 4px 14px rgba(27, 58, 107, 0.35);
   --glow-accent: 0 0 14px 3px rgba(232, 160, 32, 0.75);

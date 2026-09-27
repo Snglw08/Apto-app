@@ -46,7 +46,12 @@ export default async function PacienteDetallePage({
     );
   }
 
-  const { data: reglas } = await supabase
+  // El error se mira, no se descarta: si la consulta falla y se cae a una lista
+  // vacía, el panel le muestra al nutricionista un plan vacío para un paciente
+  // que sí tiene reglas, y podría volver a cargarlas duplicadas. Mismo criterio
+  // que en /perfil y en el semáforo: "no tiene" y "no pudimos consultar" son
+  // dos mensajes distintos.
+  const { data: reglas, error: reglasError } = await supabase
     .from("reglas")
     .select("id, tipo, ingrediente_clave")
     .eq("paciente_id", paciente.id)
@@ -72,7 +77,14 @@ export default async function PacienteDetallePage({
         )}
       </div>
 
-      <ReglasPanel pacienteId={paciente.id} reglasIniciales={reglas ?? []} />
+      {reglasError ? (
+        <p className={styles.avisoError}>
+          No pudimos cargar las reglas de este paciente. Esto no significa que no tenga
+          ninguna: recarga la página para volver a intentar.
+        </p>
+      ) : (
+        <ReglasPanel pacienteId={paciente.id} reglasIniciales={reglas ?? []} />
+      )}
 
       <CodigoInvitacion
         pacienteId={paciente.id}

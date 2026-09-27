@@ -32,7 +32,7 @@
   border-radius: var(--radius-box);
   background: var(--color-bg-card);
   color: var(--color-brand);
-  box-shadow: 0 8px 20px rgba(16, 22, 35, 0.1);
+  box-shadow: var(--shadow-button-round);
 }
 
 .badge {
@@ -167,7 +167,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.08);
+  box-shadow: var(--shadow-card-strong);
 }
 
 .cuentaNombre {
@@ -225,7 +225,7 @@
   background: var(--color-bg-card);
   border-radius: var(--radius-card);
   padding: 16px 18px;
-  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.06);
+  box-shadow: var(--shadow-card-soft);
 }
 
 .pacienteInfo {
@@ -264,6 +264,19 @@
   font-size: 13.5px;
 }
 
+/* La consulta de reglas falló. Tokens de alerta, no de vetado: es ausencia de
+   dato, no un veredicto negativo. */
+.avisoError {
+  padding: 16px;
+  border-radius: var(--radius-box);
+  background: var(--color-alerta-bg);
+  color: var(--color-alerta-fg);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 /* --- Panel de restricciones --- */
 
 .restriccionesCard {
@@ -273,7 +286,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.08);
+  box-shadow: var(--shadow-card-strong);
 }
 
 .reglaFila {

@@ -52,3 +52,6 @@ cloudflare-env.d.ts
 # Notas de trabajo locales: checklist de puesta en marcha y pendientes.
 # No forma parte de lo que se publica. Quitar esta línea si se quiere versionar.
 PENDIENTES.md
+# Plan de trabajo por sprints. Mismo criterio: un repo de portafolio no publica
+# su propia lista de bugs abiertos.
+SPRINTS.md

@@ -34,6 +34,12 @@ on conflict (id) do nothing;
 -- --------------------------------------------------------------------------
 -- Reglas. `ingrediente_clave` se busca como substring en el texto de
 -- ingredientes del producto, venga de off_cache o de productos_propios.
+--
+-- Ojo con la diferencia entre el NOMBRE del producto y sus INGREDIENTES: la
+-- regla matchea contra los ingredientes. Una bebida de avena se llama "Bebida
+-- de Avena" pero sus ingredientes dicen "agua, avena 10%...", así que la clave
+-- tiene que ser 'avena' y no 'bebida de avena' — con esta última, el estado
+-- RECOMENDADO era inalcanzable (verificado contra productos reales de OFF).
 -- Una coincidencia con una regla 'vetado' gana siempre sobre 'recomendado':
 -- ante conflicto, el semáforo falla hacia el lado seguro.
 insert into reglas (id, paciente_id, tipo, ingrediente_clave) values
@@ -41,7 +47,7 @@ insert into reglas (id, paciente_id, tipo, ingrediente_clave) values
   ('a1000000-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'vetado',      'lactosa'),
   ('a1000000-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111', 'vetado',      'leche'),
   ('a1000000-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111', 'vetado',      'suero de leche'),
-  ('a1000000-0000-4000-8000-000000000004', '11111111-1111-4111-8111-111111111111', 'recomendado', 'bebida de avena'),
+  ('a1000000-0000-4000-8000-000000000004', '11111111-1111-4111-8111-111111111111', 'recomendado', 'avena'),
 
   -- Ana Ríos — celíaca
   ('a2000000-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'vetado',      'trigo'),

@@ -25,31 +25,42 @@
 	// vía getCloudflareContext().env para no depender de ese bundle.
 	"vars": {
 		"OFF_API_BASE_URL": "https://world.openfoodfacts.org",
-		"NEXT_PUBLIC_SUPABASE_URL": "https://TU-PROYECTO.supabase.co",
-		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_TU_KEY",
-		"SUPABASE_URL": "https://TU-PROYECTO.supabase.co",
-		"SUPABASE_ANON_KEY": "sb_publishable_TU_KEY"
+		"NEXT_PUBLIC_SUPABASE_URL": "https://kjsnsvejjzwbgwqfaiyv.supabase.co",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_2PBLrBy7i_Ki6_QO0VFFEA_UvrPiP91",
+		"SUPABASE_URL": "https://kjsnsvejjzwbgwqfaiyv.supabase.co",
+		"SUPABASE_ANON_KEY": "sb_publishable_2PBLrBy7i_Ki6_QO0VFFEA_UvrPiP91"
 	},
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
 	// Cache incremental de Next.js. Crear con:
-	//   npx wrangler kv namespace create NEXT_INC_CACHE_KV
+	//   npx wrangler kv namespace create apto-inc-cache
 	// y pegar el id que devuelve. Se habilita en open-next.config.ts.
+	//
+	// `binding` es el nombre con el que el código lo ve (env.NEXT_INC_CACHE_KV) y
+	// lo fija el adapter; el título del namespace en el dashboard es aparte y
+	// puede ser cualquiera. Conviene que sea distinguible: si la cuenta tiene
+	// otros Workers, dos namespaces titulados igual se confunden, y compartir uno
+	// haría que las entradas de caché de dos apps colisionen.
 	"kv_namespaces": [
 		{
 			"binding": "NEXT_INC_CACHE_KV",
-			"id": "TU_KV_NAMESPACE_ID"
+			"id": "6905700cafa64dc281fac428192a97a9"
 		}
 	],
 	// Frena fuerza bruta contra /api/vinculacion (código de 4 caracteres,
 	// ~924.000 combinaciones — no es un límite duro, pero corta las ráfagas
 	// automatizadas). `period` solo admite 10 o 60 segundos.
+	//
+	// `namespace_id` identifica el contador dentro de la cuenta, no dentro de
+	// este Worker: dos Workers de la misma cuenta que usen el mismo número
+	// podrían compartir cuota. Por eso no es "1001", que es el valor con el que
+	// suele quedar un proyecto recién armado y el más probable de chocar.
 	"ratelimits": [
 		{
 			"name": "VINCULACION_RATE_LIMITER",
-			"namespace_id": "1001",
+			"namespace_id": "4821",
 			"simple": {
 				"limit": 10,
 				"period": 60

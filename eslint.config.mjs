@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Propios: archivos generados, no los escribimos nosotros.
     ".open-next/**",
+    // Estado y temporales de wrangler/miniflare. Aparecen al correr
+    // `npm run preview` o `npm run dev`, y sin esta línea el lint reporta
+    // cientos de errores en código generado.
+    ".wrangler/**",
     "cloudflare-env.d.ts",
   ]),
 ]);

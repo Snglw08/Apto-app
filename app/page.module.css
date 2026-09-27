@@ -135,7 +135,7 @@
 
 .tarjetaConectado {
   background: var(--color-bg-card);
-  box-shadow: 0 10px 30px rgba(16, 22, 35, 0.06);
+  box-shadow: var(--shadow-card-soft);
 }
 
 .tarjetaSinVincular {

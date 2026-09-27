@@ -127,7 +127,7 @@
   left: 4px;
   right: 4px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-hairline);
   background: var(--color-accent);
   box-shadow: var(--glow-accent);
   animation: escanear 2.2s ease-in-out infinite;
