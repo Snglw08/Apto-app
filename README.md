@@ -40,13 +40,18 @@ vinculación.
 
 ## Capturas
 
-| Escaneo | Producto vetado | Producto recomendado |
-|---|---|---|
-| ![Pantalla de escaneo](docs/capturas/1-escaneo.png) | ![Veredicto vetado](docs/capturas/2-vetado.png) | ![Veredicto recomendado](docs/capturas/3-recomendado.png) |
+**El mismo producto, dos pacientes distintos.** Las dos capturas del medio son el
+mismo código de barras escaneado por dos personas: el veredicto no es una propiedad
+del producto, sino del cruce entre sus ingredientes y las reglas que el
+nutricionista definió para cada paciente.
 
-| Datos incompletos → foto | Panel del nutricionista | Perfil del paciente |
+| Escaneo | Recomendado, para quien puede | El mismo producto, para quien no |
 |---|---|---|
-| ![Datos incompletos](docs/capturas/4-incompleto.png) | ![Panel del nutricionista](docs/capturas/5-panel.png) | ![Perfil del paciente](docs/capturas/6-perfil.png) |
+| ![Pantalla de escaneo](docs/capturas/1-escaneo.png) | ![El mismo producto, recomendado para un paciente cuyas reglas lo permiten](docs/capturas/3-recomendado.png) | ![El mismo producto, no recomendado para un paciente que tiene ese ingrediente vetado](docs/capturas/2-vetado.png) |
+
+| Producto desconocido → foto | Panel del nutricionista | Perfil del paciente |
+|---|---|---|
+| ![Un código que no está en Open Food Facts: se ofrece leer la etiqueta por foto](docs/capturas/4-incompleto.png) | ![Panel del nutricionista con sus pacientes y reglas](docs/capturas/5-panel.png) | ![Perfil del paciente con sus ingredientes a evitar y preferir](docs/capturas/6-perfil.png) |
 
 ---
 
