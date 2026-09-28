@@ -17,7 +17,7 @@ PWA instalable. Next.js 16 + TypeScript + Supabase, desplegada en Cloudflare Wor
 
 ---
 
-## Probar la demo
+## Probar la demo (para celular idealmente)
 
 **[apto-app.snglwdesign.workers.dev](https://apto-app.snglwdesign.workers.dev)**
 
