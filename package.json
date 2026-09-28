@@ -6,6 +6,7 @@
   "engines": {
     "node": ">=22"
   },
+  "//package-lock": "Generar SIEMPRE con npm 10 —el que trae Node 22, el piso declarado arriba— y nunca con npm 11: `npx npm@10 install --package-lock-only`. vite declara esbuild como peerDependency; npm 11 la satisface reusando el esbuild que ya cuelga de wrangler, npm 10 exige una copia aparte con sus 27 binarios de plataforma. El lockfile de npm 10 lo aceptan las dos versiones, el de npm 11 revienta en npm 10 con EUSAGE 'Missing: esbuild@x from lock file'. La regla general: generarlo con el npm más viejo que se soporte, porque la compatibilidad va en una sola dirección.",
   "//build": "--webpack: con Turbopack (default en Next 16) el build de @opennextjs/cloudflare genera un worker roto (ChunkLoadError, 500 en runtime workerd). Quitar cuando el adapter soporte Turbopack.",
   "scripts": {
     "dev": "next dev",
