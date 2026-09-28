@@ -1,5 +1,7 @@
 # Apto
 
+[![CI](https://github.com/Snglw08/Apto/actions/workflows/ci.yml/badge.svg)](https://github.com/Snglw08/Apto/actions/workflows/ci.yml)
+
 **Escáner de etiquetas que responde una sola pregunta: ¿este producto es apto para mí?**
 
 Un paciente apunta la cámara al código de barras de un producto en el supermercado y
@@ -17,7 +19,7 @@ PWA instalable. Next.js 16 + TypeScript + Supabase, desplegada en Cloudflare Wor
 
 ## Probar la demo
 
-**[apto-app.workers.dev](https://apto-app.workers.dev)** ← reemplazar con tu URL
+**[apto-app.snglwdesign.workers.dev](https://apto-app.snglwdesign.workers.dev)**
 
 En 30 segundos, sin crear cuenta:
 
@@ -357,8 +359,8 @@ Requiere Node 20+, una cuenta de Supabase y una de Cloudflare (las dos en free t
 alcanzan), y una API key de Gemini si se quiere probar el OCR.
 
 ```bash
-git clone https://github.com/TU-USUARIO/apto-app.git
-cd apto-app
+git clone https://github.com/Snglw08/Apto.git
+cd Apto
 npm install
 
 cp .env.example .env.local        # lo lee next dev y el build
