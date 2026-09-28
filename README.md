@@ -355,7 +355,7 @@ custom-worker.ts                 Worker de OpenNext + handler scheduled del keep
 
 ## Puesta en marcha
 
-Requiere Node 20+, una cuenta de Supabase y una de Cloudflare (las dos en free tier
+Requiere Node 22+, una cuenta de Supabase y una de Cloudflare (las dos en free tier
 alcanzan), y una API key de Gemini si se quiere probar el OCR.
 
 ```bash

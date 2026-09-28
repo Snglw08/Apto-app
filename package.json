@@ -2,6 +2,10 @@
   "name": "apto-app",
   "version": "0.1.0",
   "private": true,
+  "//engines": "Node 22 es el piso real: lo exigen @supabase/supabase-js, wrangler y miniflare, entre otros. Declararlo hace que npm avise al instalar en vez de fallar de forma confusa.",
+  "engines": {
+    "node": ">=22"
+  },
   "//build": "--webpack: con Turbopack (default en Next 16) el build de @opennextjs/cloudflare genera un worker roto (ChunkLoadError, 500 en runtime workerd). Quitar cuando el adapter soporte Turbopack.",
   "scripts": {
     "dev": "next dev",

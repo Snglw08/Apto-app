@@ -22,13 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node 20 y no la última: el README dice "Node 20+" y package.json pinea
-      # @types/node en ^20. El CI verifica contra el piso soportado, no contra
-      # la versión que cada uno tenga instalada — si algo solo funciona en 22,
-      # que falle acá y no en la máquina de quien clone el repo.
+      # Node 22 y no la última: es el piso REAL del proyecto, declarado en
+      # `engines` de package.json. Nueve dependencias lo exigen —entre ellas
+      # @supabase/supabase-js y wrangler— aunque el README dijera "Node 20+".
+      #
+      # Ese error lo encontró este mismo workflow: la primera corrida usaba 20
+      # porque era lo que el README afirmaba, y falló al instalar. Verificar
+      # contra el piso declarado sirve justamente para esto — siempre que el
+      # piso declarado sea el verdadero.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       # `ci` y no `install`: instala exactamente lo que dice package-lock.json
